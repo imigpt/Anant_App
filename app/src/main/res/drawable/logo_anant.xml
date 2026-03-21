@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Background circle -->
+    <path
+        android:fillColor="#E74C3C"
+        android:pathData="M54,14C32.9,14 15,31.9 15,53C15,74.1 32.9,92 54,92C75.1,92 93,74.1 93,53C93,31.9 75.1,14 54,14Z" />
+
+    <!-- Heart shape inside -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M54,36C54,36 45,27 38,27C33.6,27 30,30.6 30,35C30,39.4 33.6,43 38,43C42,43 46,45 54,52C62,45 66,43 70,43C74.4,43 78,39.4 78,35C78,30.6 74.4,27 70,27C63,27 54,36 54,36Z" />
+</vector>

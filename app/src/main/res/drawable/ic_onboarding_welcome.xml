@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="120dp"
+    android:height="120dp"
+    android:viewportWidth="120"
+    android:viewportHeight="120">
+
+    <!-- Left eye -->
+    <path
+        android:fillColor="#FF1F2937"
+        android:pathData="M41,50 A4,4 0 1,1 49,50 A4,4 0 1,1 41,50" />
+
+    <!-- Right eye -->
+    <path
+        android:fillColor="#FF1F2937"
+        android:pathData="M71,50 A4,4 0 1,1 79,50 A4,4 0 1,1 71,50" />
+
+    <!-- Smile -->
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#FF1F2937"
+        android:strokeWidth="3"
+        android:strokeLineCap="round"
+        android:pathData="M45,65Q60,75 75,65" />
+
+    <!-- Red heart on top -->
+    <path
+        android:fillColor="#FFE74C3C"
+        android:pathData="M60,30C60,30 52,22 46,22C40,22 36,26 36,32C36,38 40,42 46,42C52,42 56,45 60,50C64,45 68,42 74,42C80,42 84,38 84,32C84,26 80,22 74,22C68,22 60,30 60,30Z" />
+</vector>

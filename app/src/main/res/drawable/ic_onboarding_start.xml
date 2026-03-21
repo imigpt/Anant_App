@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="120dp"
+    android:height="120dp"
+    android:viewportWidth="120"
+    android:viewportHeight="120">
+
+    <!-- Rocket body -->
+    <path
+        android:fillColor="#FFFF6B35"
+        android:pathData="M60,15L75,45L75,75C75,85 68,95 60,95C52,95 45,85 45,75L45,45L60,15Z" />
+
+    <!-- Rocket window -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M52,35 A8,8 0 1,1 68,35 A8,8 0 1,1 52,35" />
+
+    <!-- Left fin -->
+    <path
+        android:fillColor="#FFEF5350"
+        android:pathData="M45,60L35,70L45,75Z" />
+
+    <!-- Right fin -->
+    <path
+        android:fillColor="#FFEF5350"
+        android:pathData="M75,60L85,70L75,75Z" />
+
+    <!-- Flame bottom left -->
+    <path
+        android:fillColor="#FFFBBF24"
+        android:pathData="M50,95L45,110L55,100Z" />
+
+    <!-- Flame bottom right -->
+    <path
+        android:fillColor="#FFFBBF24"
+        android:pathData="M70,95L75,110L65,100Z" />
+
+    <!-- Flame center -->
+    <path
+        android:fillColor="#FFFF6B35"
+        android:pathData="M60,100L55,115L65,115Z" />
+</vector>

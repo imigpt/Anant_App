@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="300dp"
+    android:height="200dp"
+    android:viewportWidth="300"
+    android:viewportHeight="200">
+
+    <!-- Map background -->
+    <path
+        android:pathData="M0,0 L300,0 L300,200 L0,200 Z"
+        android:fillColor="#F5F5F5"/>
+
+    <!-- Street lines (horizontal) -->
+    <path
+        android:pathData="M0,50 L300,50"
+        android:strokeColor="#E0E0E0"
+        android:strokeWidth="2"/>
+    <path
+        android:pathData="M0,100 L300,100"
+        android:strokeColor="#E0E0E0"
+        android:strokeWidth="3"/>
+    <path
+        android:pathData="M0,150 L300,150"
+        android:strokeColor="#E0E0E0"
+        android:strokeWidth="2"/>
+
+    <!-- Street lines (vertical) -->
+    <path
+        android:pathData="M75,0 L75,200"
+        android:strokeColor="#E0E0E0"
+        android:strokeWidth="2"/>
+    <path
+        android:pathData="M150,0 L150,200"
+        android:strokeColor="#E0E0E0"
+        android:strokeWidth="3"/>
+    <path
+        android:pathData="M225,0 L225,200"
+        android:strokeColor="#E0E0E0"
+        android:strokeWidth="2"/>
+
+    <!-- Orange location pin -->
+    <path
+        android:pathData="M150,85 C145.5,85 142,88.5 142,93 C142,99.5 150,110 150,110 S158,99.5 158,93 C158,88.5 154.5,85 150,85 Z M150,96 C148.3,96 147,94.7 147,93 C147,91.3 148.3,90 150,90 C151.7,90 153,91.3 153,93 C153,94.7 151.7,96 150,96 Z"
+        android:fillColor="#FF8C00"/>
+
+    <!-- Pin shadow -->
+    <path
+        android:pathData="M150,110 C148,108 146,106 146,104 C146,103 147,102 148,102 L152,102 C153,102 154,103 154,104 C154,106 152,108 150,110 Z"
+        android:fillColor="#CC7000"
+        android:fillAlpha="0.6"/>
+</vector>
