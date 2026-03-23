@@ -24,8 +24,13 @@ import com.example.anantapp.presentation.screen.FamilyDetailsScreen
 import com.example.anantapp.presentation.screen.GovernmentFundraisersScreen
 import com.example.anantapp.presentation.screen.HomeScreen
 import com.example.anantapp.presentation.screen.PaymentMethodScreen
+import com.example.anantapp.presentation.screen.PreviewAndSubmitScreen
 import com.example.anantapp.presentation.screen.SelectFundraiserCategoryScreen
 import com.example.anantapp.presentation.screen.CreateFundraiserScreen
+import com.example.anantapp.presentation.screen.TargetAndPaymentsScreen
+import com.example.anantapp.presentation.screen.ProfileSettingsScreen
+import com.example.anantapp.presentation.screen.FamilyInformationScreen
+import com.example.anantapp.presentation.screen.ContactInformationScreen
 import com.example.anantapp.presentation.screen.TransactionScreen
 import com.example.anantapp.presentation.screen.VerifyIncomeScreen
 import com.example.anantapp.ui.login.LoginScreen
@@ -215,6 +220,39 @@ private fun MainContent(modifier: Modifier = Modifier) {
                                 currentScreen.value = "home"
                             },
                             onFundraiserCreated = { fundraiserId ->
+                                currentScreen.value = "target_payments"
+                            },
+                            onNavigateToTargetPayments = {
+                                currentScreen.value = "target_payments"
+                            }
+                        )
+                    }
+
+                    "target_payments" -> {
+                        TargetAndPaymentsScreen(
+                            viewModel = viewModel(),
+                            onBackClick = {
+                                currentScreen.value = "create_fundraiser"
+                            },
+                            onDraftSaved = {
+                                currentScreen.value = "home"
+                            },
+                            onFundraiserPublished = {
+                                currentScreen.value = "preview_and_submit"
+                            }
+                        )
+                    }
+
+                    "preview_and_submit" -> {
+                        PreviewAndSubmitScreen(
+                            viewModel = viewModel(),
+                            onBackClick = {
+                                currentScreen.value = "target_payments"
+                            },
+                            onDraftSaved = {
+                                currentScreen.value = "home"
+                            },
+                            onSubmitSuccess = { fundraiserId ->
                                 currentScreen.value = "home"
                             }
                         )
@@ -227,7 +265,7 @@ private fun MainContent(modifier: Modifier = Modifier) {
                             onHomeClick = { currentScreen.value = "home" },
                             onAnalyticsClick = { currentScreen.value = "dashboard" },
                             onNotificationClick = { /* Handle notifications */ },
-                            onProfileClick = { /* Handle profile */ }
+                            onProfileClick = { currentScreen.value = "profile_settings" }
                         )
                     }
 
@@ -236,7 +274,7 @@ private fun MainContent(modifier: Modifier = Modifier) {
                             onHomeClick = { currentScreen.value = "home" },
                             onAnalyticsClick = { currentScreen.value = "dashboard" },
                             onNotificationClick = { /* Handle notifications */ },
-                            onProfileClick = { /* Handle profile */ }
+                            onProfileClick = { currentScreen.value = "profile_settings" }
                         )
                     }
 
@@ -245,7 +283,7 @@ private fun MainContent(modifier: Modifier = Modifier) {
                             onHomeClick = { currentScreen.value = "home" },
                             onAnalyticsClick = { currentScreen.value = "dashboard" },
                             onNotificationClick = { /* Handle notifications */ },
-                            onProfileClick = { /* Handle profile */ }
+                            onProfileClick = { currentScreen.value = "profile_settings" }
                         )
                     }
 
@@ -269,6 +307,31 @@ private fun MainContent(modifier: Modifier = Modifier) {
                     "donation_history" -> {
                         DonationHistoryScreen(
                             onBackClick = { currentScreen.value = "home" }
+                        )
+                    }
+
+                    "profile_settings" -> {
+                        ProfileSettingsScreen(
+                            onBackClick = { currentScreen.value = "home" },
+                            onContactClick = { currentScreen.value = "contact_information" },
+                            onFamilyClick = { currentScreen.value = "family_information" },
+                            onBankClick = { /* TODO: Navigate to bank accounts screen */ },
+                            onInsuranceClick = { /* TODO: Navigate to insurance screen */ },
+                            onMedicalClick = { /* TODO: Navigate to medical info screen */ },
+                            onLogoutClick = { currentScreen.value = "home" }
+                        )
+                    }
+                    "family_information" -> {
+                        FamilyInformationScreen(
+                            onBackClick = { currentScreen.value = "profile_settings" },
+                            onUpdateClick = { currentScreen.value = "profile_settings" }
+                        )
+                    }
+
+                    "contact_information" -> {
+                        ContactInformationScreen(
+                            onBackClick = { currentScreen.value = "profile_settings" },
+                            onUpdateClick = { currentScreen.value = "profile_settings" }
                         )
                     }
 

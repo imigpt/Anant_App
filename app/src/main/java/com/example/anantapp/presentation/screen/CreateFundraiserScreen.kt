@@ -50,6 +50,8 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.anantapp.R
 import com.example.anantapp.presentation.viewmodel.CreateFundraiserViewModel
+import com.example.anantapp.ui.components.FormLabel
+import com.example.anantapp.ui.components.RequiredFormLabel
 import com.example.anantapp.ui.theme.AnantAppTheme
 
 data class CountryData(val name: String, val code: String, val flag: String, val dialCode: String)
@@ -59,7 +61,8 @@ fun CreateFundraiserScreen(
     viewModel: CreateFundraiserViewModel = viewModel(),
     onBackClick: () -> Unit = {},
     onDraftSaved: () -> Unit = {},
-    onFundraiserCreated: (fundraiserId: String) -> Unit = {}
+    onFundraiserCreated: (fundraiserId: String) -> Unit = {},
+    onNavigateToTargetPayments: () -> Unit = {}
 ) {
     // Step State: 1 = Create Fundraiser, 2 = Beneficiary Information, 3 = Upload Documents
     var currentStep by remember { mutableIntStateOf(1) }
@@ -94,7 +97,11 @@ fun CreateFundraiserScreen(
                     mainGradient = mainGradient,
                     onBackClick = { currentStep = 2 }, // Return to Step 2
                     onDraftSaved = onDraftSaved,
-                    onNextClick = { onFundraiserCreated("${System.currentTimeMillis()}") } // Final submission
+                    onNextClick = { 
+                        onFundraiserCreated("${System.currentTimeMillis()}")
+                        // Navigate to Target & Payments screen
+                        onNavigateToTargetPayments()
+                    }
                 )
             }
         }
@@ -609,37 +616,6 @@ fun ScreenHeader(title: String, onBackClick: () -> Unit) {
             textAlign = TextAlign.Center,
             modifier = Modifier.weight(1f).offset(x = (-12).dp)
         )
-    }
-}
-
-@Composable
-fun FormLabel(text: String) {
-    Text(
-        text = text,
-        fontSize = 14.sp,
-        fontWeight = FontWeight.SemiBold,
-        color = Color(0xFF333333),
-        modifier = Modifier.padding(bottom = 8.dp)
-    )
-}
-
-@Composable
-fun RequiredFormLabel(text: String, isRequired: Boolean = true) {
-    Row(modifier = Modifier.padding(bottom = 8.dp)) {
-        Text(
-            text = text,
-            fontSize = 14.sp,
-            fontWeight = FontWeight.SemiBold,
-            color = Color(0xFF333333)
-        )
-        if (isRequired) {
-            Text(
-                text = " *",
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.Red
-            )
-        }
     }
 }
 

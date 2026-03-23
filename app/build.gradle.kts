@@ -66,6 +66,10 @@ dependencies {
 
     // Navigation
     implementation("androidx.navigation:navigation-compose:2.8.7")
+    implementation(libs.androidx.compose.foundation)
+
+    // Coil for Image Loading
+    implementation(libs.coil.compose)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
