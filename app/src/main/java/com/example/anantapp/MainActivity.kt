@@ -17,10 +17,16 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.anantapp.presentation.screen.BalanceScreen
 import com.example.anantapp.presentation.screen.DashboardScreen
 import com.example.anantapp.presentation.screen.DeclareInsuranceDetailsScreen
+import com.example.anantapp.presentation.screen.DeliveryAddressScreen
+import com.example.anantapp.presentation.screen.OrderSuccessScreen
+import com.example.anantapp.presentation.screen.OrderStatusScreen
+import com.example.anantapp.presentation.screen.ViewQRCodeScreen
+import com.example.anantapp.presentation.screen.GenerateQRCodeInfoScreen
 import com.example.anantapp.presentation.screen.DonationHistoryScreen
 import com.example.anantapp.presentation.screen.DonorScreen
 import com.example.anantapp.presentation.screen.EnableLocationScreen
 import com.example.anantapp.presentation.screen.FamilyDetailsScreen
+import com.example.anantapp.presentation.screen.GenerateQRCodeScreen
 import com.example.anantapp.presentation.screen.GovernmentFundraisersScreen
 import com.example.anantapp.presentation.screen.HomeScreen
 import com.example.anantapp.presentation.screen.PaymentMethodScreen
@@ -32,6 +38,7 @@ import com.example.anantapp.presentation.screen.ProfileSettingsScreen
 import com.example.anantapp.presentation.screen.FamilyInformationScreen
 import com.example.anantapp.presentation.screen.ContactInformationScreen
 import com.example.anantapp.presentation.screen.TransactionScreen
+import com.example.anantapp.presentation.screen.UserDetailsScreen
 import com.example.anantapp.presentation.screen.VerifyIncomeScreen
 import com.example.anantapp.ui.login.LoginScreen
 import com.example.anantapp.ui.onboarding.OnboardingScreen
@@ -58,6 +65,13 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 private fun MainContent(modifier: Modifier = Modifier) {
+    val orderSuccessComplete = remember { mutableStateOf(false) }
+    val orderStatusComplete = remember { mutableStateOf(false) }
+    val viewQRCodeComplete = remember { mutableStateOf(false) }
+    val generateQRInfoComplete = remember { mutableStateOf(false) }
+    val generateQRCodeComplete = remember { mutableStateOf(false) }
+    val userDetailsComplete = remember { mutableStateOf(false) }
+    val deliveryAddressComplete = remember { mutableStateOf(false) }
     val onboardingComplete = remember { mutableStateOf(true) }
     val loginComplete = remember { mutableStateOf(true) }
     val documentVerified = remember { mutableStateOf(true) }
@@ -75,6 +89,96 @@ private fun MainContent(modifier: Modifier = Modifier) {
     // This ensures every screen respects the safe-area padding from the Scaffold.
     Box(modifier = modifier) {
         when {
+            !orderSuccessComplete.value -> {
+                OrderSuccessScreen(
+                    onDownloadPDFClick = {
+                        // Handle PDF download
+                    },
+                    onOrderStatusClick = {
+                        orderSuccessComplete.value = true
+                    },
+                    onHomeClick = {
+                        orderSuccessComplete.value = true
+                    }
+                )
+            }
+
+            !orderStatusComplete.value -> {
+                OrderStatusScreen(
+                    onTrackOnMapClick = {
+                        // Handle track on map
+                    },
+                    onDownloadQRClick = {
+                        // Handle download QR
+                    },
+                    onViewQRCodeClick = {
+                        viewQRCodeComplete.value = true
+                    },
+                    onHomeClick = {
+                        currentScreen.value = "home"
+                        orderStatusComplete.value = true
+                    }
+                )
+            }
+
+            !viewQRCodeComplete.value -> {
+                ViewQRCodeScreen(
+                    onShareQRClick = {
+                        generateQRInfoComplete.value = true
+                    },
+                    onDownloadQRClick = {
+                        generateQRInfoComplete.value = true
+                    }
+                )
+            }
+
+            !generateQRInfoComplete.value -> {
+                GenerateQRCodeInfoScreen(
+                    onShareQRClick = {
+                        // Handle share QR
+                    },
+                    onDownloadQRClick = {
+                        // Handle download QR
+                    }
+                )
+            }
+
+            !generateQRCodeComplete.value -> {
+                GenerateQRCodeScreen(
+                    onBackClick = {
+                        // App initialization - no screen to go back to
+                    },
+                    onNextClick = { formState ->
+                        // QR Code form submitted - proceed to user details screen
+                        generateQRCodeComplete.value = true
+                    }
+                )
+            }
+
+            !userDetailsComplete.value -> {
+                UserDetailsScreen(
+                    onBackClick = {
+                        generateQRCodeComplete.value = false
+                    },
+                    onNextClick = { formState ->
+                        // User details form submitted - proceed to delivery address screen
+                        userDetailsComplete.value = true
+                    }
+                )
+            }
+
+            !deliveryAddressComplete.value -> {
+                DeliveryAddressScreen(
+                    onBackClick = {
+                        userDetailsComplete.value = false
+                    },
+                    onNextClick = { formState ->
+                        // Delivery address form submitted - proceed to next flow
+                        deliveryAddressComplete.value = true
+                    }
+                )
+            }
+
             !onboardingComplete.value -> {
                 OnboardingScreen(
                     onOnboardingComplete = {
