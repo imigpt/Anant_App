@@ -22,6 +22,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -30,6 +31,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -59,36 +61,50 @@ fun EnableLocationScreen(
             .fillMaxSize()
             .background(Color(0xFFF7F7F7)) // Light gray background
     ) {
-        // Decorative blurred green blobs in the background
+        // Decorative solid green circles in the background with linear gradient
         Canvas(modifier = Modifier.fillMaxSize()) {
+            val blobGradient = Brush.linearGradient(
+                colors = listOf(Color(0xFFBCFE37), Color(0xFF82B027)),
+                start = Offset(0f, 0f),
+                end = Offset(size.width, size.height)
+            )
+
             // Top Right Blob
             drawCircle(
-                brush = Brush.radialGradient(
-                    colors = listOf(Color(0xFF8AE02B).copy(alpha = 0.8f), Color.Transparent),
-                    center = Offset(size.width, 0f),
-                    radius = 600f
-                ),
-                center = Offset(size.width - 100f, 100f)
+                brush = blobGradient,
+                center = Offset(size.width - 50f, 150f),
+                radius = 200f,
+                alpha = 0.8f
             )
             // Bottom Left Blob
             drawCircle(
-                brush = Brush.radialGradient(
-                    colors = listOf(Color(0xFF8AE02B).copy(alpha = 0.8f), Color.Transparent),
-                    center = Offset(0f, size.height),
-                    radius = 500f
-                ),
-                center = Offset(100f, size.height - 100f)
+                brush = blobGradient,
+                center = Offset(100f, size.height - 150f),
+                radius = 150f,
+                alpha = 0.8f
             )
         }
 
-        // Main White Card
+        // Main Card with Glassmorphism effect
         Card(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 24.dp, vertical = 64.dp), // Margins to show background
+                .padding(horizontal = 24.dp, vertical = 64.dp)
+                .shadow(
+                    elevation = 20.dp,
+                    shape = RoundedCornerShape(32.dp),
+                    ambientColor = Color.Black.copy(alpha = 0.1f),
+                    spotColor = Color.Black.copy(alpha = 0.15f)
+                )
+                .border(
+                    width = 1.5.dp,
+                    color = Color.White.copy(alpha = 0.5f),
+                    shape = RoundedCornerShape(32.dp)
+                ),
             shape = RoundedCornerShape(32.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
-            elevation = CardDefaults.cardElevation(defaultElevation = 16.dp)
+            colors = CardDefaults.cardColors(
+                containerColor = Color.White.copy(alpha = 0.7f) // Semi-transparent for glassmorphism
+            )
         ) {
             Column(
                 modifier = Modifier
@@ -109,7 +125,7 @@ fun EnableLocationScreen(
                                 color = Color(0xFFE0E0E0),
                                 shape = RoundedCornerShape(16.dp)
                             )
-                            .background(Color.White, RoundedCornerShape(16.dp))
+                            .background(Color.White.copy(alpha = 0.5f), RoundedCornerShape(16.dp))
                             .padding(horizontal = 16.dp, vertical = 6.dp),
                         contentAlignment = Alignment.Center
                     ) {
@@ -179,7 +195,7 @@ fun EnableLocationScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(56.dp)
-                        .background(Color.White, RoundedCornerShape(28.dp))
+                        .background(Color.White.copy(alpha = 0.8f), RoundedCornerShape(28.dp))
                         .border(
                             width = 2.dp,
                             brush = Brush.horizontalGradient(
@@ -231,7 +247,7 @@ fun EnableLocationScreen(
                         .fillMaxWidth()
                         .height(56.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF4CAF50) // Green
+                        containerColor = Color(0xFFFFCF11) // Green
                     ),
                     shape = RoundedCornerShape(28.dp)
                 ) {
@@ -268,4 +284,10 @@ fun EnableLocationScreen(
             }
         }
     }
+}
+
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+fun EnableLocationScreenPreview() {
+    EnableLocationScreen(onSkip = {}, onSuccess = {})
 }

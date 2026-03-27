@@ -50,7 +50,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
@@ -58,6 +57,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -427,12 +427,12 @@ private fun LoadingOverlay() {
 @Composable
 private fun BoxScope.BackgroundDecoration(isSuccess: Boolean) {
     if (!isSuccess) {
-        Box(modifier = Modifier.size(240.dp).align(Alignment.TopStart).offset((-40).dp, 80.dp).blur(40.dp).background(brush = Brush.linearGradient(listOf(OrangeGradientStart, OrangeGradientEnd)), shape = CircleShape))
-        Box(modifier = Modifier.size(280.dp).align(Alignment.BottomEnd).offset(80.dp, (-80).dp).blur(40.dp).background(brush = Brush.linearGradient(listOf(OrangeGradientStart, OrangeGradientEnd)), shape = CircleShape))
+        Box(modifier = Modifier.size(240.dp).align(Alignment.TopStart).offset((-40).dp, 80.dp).background(brush = Brush.linearGradient(listOf(OrangeGradientStart, OrangeGradientEnd)), shape = CircleShape))
+        Box(modifier = Modifier.size(280.dp).align(Alignment.BottomEnd).offset(80.dp, (-80).dp).background(brush = Brush.linearGradient(listOf(OrangeGradientStart, OrangeGradientEnd)), shape = CircleShape))
     } else {
-        Box(modifier = Modifier.size(220.dp).align(Alignment.TopStart).offset((-20).dp, 60.dp).blur(40.dp).background(PurpleBlobColor, CircleShape))
-        Box(modifier = Modifier.size(80.dp).align(Alignment.TopEnd).offset((-40).dp, 80.dp).blur(20.dp).background(brush = Brush.linearGradient(listOf(OrangeGradientStart, OrangeGradientEnd)), shape = CircleShape))
-        Box(modifier = Modifier.size(140.dp).align(Alignment.BottomStart).offset((-20).dp, (-180).dp).blur(30.dp).background(brush = Brush.linearGradient(listOf(OrangeGradientStart, OrangeGradientEnd)), shape = CircleShape))
+        Box(modifier = Modifier.size(220.dp).align(Alignment.TopStart).offset((-20).dp, 60.dp).background(PurpleBlobColor, CircleShape))
+        Box(modifier = Modifier.size(80.dp).align(Alignment.TopEnd).offset((-40).dp, 80.dp).background(brush = Brush.linearGradient(listOf(OrangeGradientStart, OrangeGradientEnd)), shape = CircleShape))
+        Box(modifier = Modifier.size(140.dp).align(Alignment.BottomStart).offset((-20).dp, (-180).dp).background(brush = Brush.linearGradient(listOf(OrangeGradientStart, OrangeGradientEnd)), shape = CircleShape))
     }
 }
 
@@ -495,4 +495,10 @@ private fun PrivacyFooter() {
         Spacer(modifier = Modifier.width(6.dp))
         Text("Your data stays private & encrypted.", fontSize = 12.sp, color = Color(0xFFB0B0B0))
     }
+}
+
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+fun VerifyScreenPreview() {
+    VerifyScreen()
 }

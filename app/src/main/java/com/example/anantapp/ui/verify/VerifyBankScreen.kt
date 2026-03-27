@@ -10,13 +10,15 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.AccountBalance
+import androidx.compose.material.icons.outlined.Key
+import androidx.compose.material.icons.outlined.Lock
+import androidx.compose.material.icons.outlined.MoreHoriz
+import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
@@ -27,18 +29,23 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 
-// Exact Color definitions
+// Exact Color definitions for Background
 private val OrangeGradientStart = Color(0xFFFF6300)
 private val OrangeGradientEnd = Color(0xFFFFCF11)
-private val PurpleAccent = Color(0xFFC026D3)
 private val MainBackground = Color(0xFFFAFAFA)
-private val TextPrimary = Color(0xFF000000)
-private val TextSecondary = Color(0xFF888888)
-private val FieldBackground = Color(0xFFF9F9F9)
+
+// Gradients matching the UI image for fields and buttons
+private val FieldGradient = Brush.horizontalGradient(
+    colors = listOf(Color(0xFFFF6A00), Color(0xFFFFC400))
+)
+private val SubmitBorderGradient = Brush.horizontalGradient(
+    colors = listOf(Color(0xFFC026D3), Color(0xFFFF6A00)) // Purple to Orange/Red
+)
 
 @Composable
 fun VerifyBankScreen(
@@ -71,50 +78,210 @@ fun VerifyBankScreen(
         // Blurred gradient blobs in the background
         BackgroundDecorationBank()
 
-        Column(
+        // Glassmorphism Card Container
+        Card(
             modifier = Modifier
                 .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 24.dp, vertical = 32.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .padding(horizontal = 24.dp, vertical = 56.dp)
+                .shadow(
+                    elevation = 16.dp,
+                    shape = RoundedCornerShape(32.dp),
+                    spotColor = Color.Black.copy(alpha = 0.1f)
+                )
+                .border(
+                    width = 1.5.dp,
+                    color = Color.White.copy(alpha = 0.5f), // Soft white border for glass edge
+                    shape = RoundedCornerShape(32.dp)
+                )
+                .background(
+                    brush = Brush.linearGradient(
+                        listOf(Color.White.copy(alpha = 0.8f), Color.White.copy(alpha = 0.4f)) // Translucent gradient
+                    ),
+                    shape = RoundedCornerShape(32.dp)
+                ),
+            shape = RoundedCornerShape(32.dp),
+            colors = CardDefaults.cardColors(containerColor = Color.Transparent)
         ) {
-            Spacer(modifier = Modifier.weight(1f))
-
-            BankVerificationCard(
-                uiState = uiState,
-                onValueChange = viewModel::updateField,
-                onSkipClick = onSkipClick,
-                onSubmitClick = viewModel::submitBankVerification,
-                onAlternateClick = viewModel::enableAlternateBankMode
-            )
-
-            Spacer(modifier = Modifier.weight(1f))
-
-            // Privacy Footer
-            Row(
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 16.dp),
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically
+                    .fillMaxSize()
+                    .padding(horizontal = 24.dp, vertical = 20.dp)
+                    .verticalScroll(rememberScrollState()),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                // Top Row: Skip Button
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(16.dp))
+                            .clickable { onSkipClick() }
+                            .background(Color.White, RoundedCornerShape(16.dp))
+                            .border(
+                                width = 1.dp,
+                                color = Color(0xFFE0E0E0),
+                                shape = RoundedCornerShape(16.dp)
+                            )
+                            .padding(horizontal = 16.dp, vertical = 6.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "Skip >>",
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = Color(0xFF333333)
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // Central Large Bank Icon
                 Icon(
-                    imageVector = Icons.Filled.Lock,
-                    contentDescription = "Secure",
-                    tint = Color(0xFFB0B0B0),
-                    modifier = Modifier.size(14.dp)
+                    imageVector = Icons.Outlined.AccountBalance,
+                    contentDescription = "Bank Icon",
+                    modifier = Modifier.size(80.dp),
+                    tint = Color.Black
                 )
-                Spacer(modifier = Modifier.width(6.dp))
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Title
                 Text(
-                    text = "Your data stays private & encrypted.",
-                    fontSize = 12.sp,
-                    color = Color(0xFFB0B0B0)
+                    text = uiState.title,
+                    fontSize = 26.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black,
+                    textAlign = TextAlign.Center
                 )
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // Account Type Toggles
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    AccountTypeToggle(
+                        label = "Current\nAccount",
+                        isSelected = uiState.accountType == "Current",
+                        activeTrackColor = Color(0xFF34C759), // Green
+                        onClick = { viewModel.updateField("accountType", "Current") },
+                        modifier = Modifier.weight(1f)
+                    )
+                    AccountTypeToggle(
+                        label = "Saving\nAccount",
+                        isSelected = uiState.accountType == "Saving",
+                        activeTrackColor = Color.Black, // Black track when active
+                        onClick = { viewModel.updateField("accountType", "Saving") },
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // Input Fields
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    GradientInputField(
+                        value = uiState.firstName,
+                        onValueChange = { viewModel.updateField("firstName", it) },
+                        placeholder = "First name",
+                        icon = Icons.Outlined.Person
+                    )
+                    GradientInputField(
+                        value = uiState.lastName,
+                        onValueChange = { viewModel.updateField("lastName", it) },
+                        placeholder = "Last name",
+                        icon = Icons.Outlined.Person
+                    )
+                    GradientInputField(
+                        value = uiState.bankName,
+                        onValueChange = { viewModel.updateField("bankName", it) },
+                        placeholder = "Bank name",
+                        icon = Icons.Outlined.Lock // Closest match for locked document
+                    )
+                    GradientInputField(
+                        value = uiState.accountNumber,
+                        onValueChange = { viewModel.updateField("accountNumber", it) },
+                        placeholder = "Account number",
+                        icon = Icons.Outlined.Key
+                    )
+                    GradientInputField(
+                        value = uiState.ifscCode,
+                        onValueChange = { viewModel.updateField("ifscCode", it.uppercase()) },
+                        placeholder = "IFSC code",
+                        icon = Icons.Outlined.MoreHoriz
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // Add Alternate Bank Account Button
+                if (!uiState.isAlternateMode) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(48.dp)
+                            .shadow(
+                                elevation = 4.dp,
+                                shape = RoundedCornerShape(24.dp),
+                                spotColor = Color.Black.copy(alpha = 0.05f)
+                            )
+                            .clip(RoundedCornerShape(24.dp))
+                            .background(Color.White)
+                            .clickable { viewModel.enableAlternateBankMode() },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "+ Add Alternate Bank Account",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = Color.Black
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(24.dp))
+                }
+
+                // Submit Button with Gradient Border
+                SubmitButton(
+                    isEnabled = uiState.isSubmitEnabled,
+                    onClick = { viewModel.submitBankVerification() }
+                )
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // Footer Text & Icon
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 8.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Lock,
+                        contentDescription = "Privacy Lock",
+                        tint = Color.Black.copy(alpha = 0.6f),
+                        modifier = Modifier.size(14.dp)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = "Your data stays private & encrypted.",
+                        fontSize = 12.sp,
+                        color = Color.Black.copy(alpha = 0.6f),
+                        fontWeight = FontWeight.Medium
+                    )
+                }
             }
         }
 
         if (uiState.isLoading) {
-            LoadingOverlay()
+            LoadingOverlayBank()
         }
 
         SnackbarHost(
@@ -127,199 +294,23 @@ fun VerifyBankScreen(
 }
 
 @Composable
-private fun BankVerificationCard(
-    uiState: com.example.anantapp.data.model.VerifyBankState,
-    onValueChange: (String, String) -> Unit,
-    onSkipClick: () -> Unit,
-    onSubmitClick: () -> Unit,
-    onAlternateClick: () -> Unit
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .shadow(
-                elevation = 24.dp,
-                shape = RoundedCornerShape(32.dp),
-                spotColor = Color.Black.copy(alpha = 0.15f),
-                ambientColor = Color.Black.copy(alpha = 0.1f)
-            )
-            .border(
-                width = 1.5.dp,
-                color = Color.White.copy(alpha = 0.4f),
-                shape = RoundedCornerShape(32.dp)
-            )
-            .background(
-                brush = Brush.linearGradient(
-                    listOf(Color.White.copy(0.7f), Color.White.copy(0.4f))
-                ),
-                shape = RoundedCornerShape(32.dp)
-            ),
-        colors = CardDefaults.cardColors(containerColor = Color.Transparent)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            // Skip Button
-            Box(
-                modifier = Modifier.fillMaxWidth(),
-                contentAlignment = Alignment.TopEnd
-            ) {
-                Box(
-                    modifier = Modifier
-                        .border(1.dp, Color(0xFFE0E0E0), RoundedCornerShape(16.dp))
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(Color.White)
-                        .clickable { onSkipClick() }
-                        .padding(horizontal = 12.dp, vertical = 6.dp)
-                ) {
-                    Text(
-                        text = "Skip >>",
-                        fontSize = 12.sp,
-                        color = TextSecondary
-                    )
-                }
-            }
-
-            // Header Icon and Title
-            Icon(
-                imageVector = Icons.Outlined.AccountBalance,
-                contentDescription = "Bank",
-                modifier = Modifier.size(56.dp),
-                tint = TextPrimary
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = uiState.title,
-                fontSize = 22.sp,
-                fontWeight = FontWeight.Bold,
-                color = TextPrimary
-            )
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Account Type Toggles
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                AccountTypeToggle(
-                    label = "Current\nAccount",
-                    isSelected = uiState.accountType == "Current",
-                    onClick = { onValueChange("accountType", "Current") },
-                    modifier = Modifier.weight(1f)
-                )
-                AccountTypeToggle(
-                    label = "Saving\nAccount",
-                    isSelected = uiState.accountType == "Saving",
-                    onClick = { onValueChange("accountType", "Saving") },
-                    modifier = Modifier.weight(1f)
-                )
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Input Fields
-            CustomInputField(
-                value = uiState.firstName,
-                onValueChange = { onValueChange("firstName", it) },
-                placeholder = "First name",
-                icon = Icons.Filled.Person
-            )
-            Spacer(modifier = Modifier.height(12.dp))
-            CustomInputField(
-                value = uiState.lastName,
-                onValueChange = { onValueChange("lastName", it) },
-                placeholder = "Last name",
-                icon = Icons.Filled.PersonOutline
-            )
-            Spacer(modifier = Modifier.height(12.dp))
-            CustomInputField(
-                value = uiState.bankName,
-                onValueChange = { onValueChange("bankName", it) },
-                placeholder = "Bank name",
-                icon = Icons.Filled.AccountBalanceWallet
-            )
-            Spacer(modifier = Modifier.height(12.dp))
-            CustomInputField(
-                value = uiState.accountNumber,
-                onValueChange = { onValueChange("accountNumber", it) },
-                placeholder = "Account number",
-                icon = Icons.Filled.Password
-            )
-            Spacer(modifier = Modifier.height(12.dp))
-            CustomInputField(
-                value = uiState.ifscCode,
-                // Automatically uppercase IFSC code for better UX
-                onValueChange = { onValueChange("ifscCode", it.uppercase()) },
-                placeholder = "IFSC code",
-                icon = Icons.Filled.Pin
-            )
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            // Add Alternate Bank Button (Only show if NOT in alternate mode)
-            if (!uiState.isAlternateMode) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(48.dp)
-                        .border(1.dp, Color(0xFFE0E0E0), RoundedCornerShape(50))
-                        .background(Color.White, RoundedCornerShape(50))
-                        .clip(RoundedCornerShape(50))
-                        .clickable { onAlternateClick() },
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "+ Add Alternate Bank Account",
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = TextPrimary
-                    )
-                }
-                Spacer(modifier = Modifier.height(24.dp))
-            }
-
-            // Submit Button
-            SubmitButton(
-                isEnabled = uiState.isSubmitEnabled,
-                onClick = onSubmitClick
-            )
-        }
-    }
-}
-
-@Composable
 private fun AccountTypeToggle(
     label: String,
     isSelected: Boolean,
+    activeTrackColor: Color,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    // If selected, give it a subtle gradient border, else standard grey
-    val borderBrush = if (isSelected) {
-        Brush.linearGradient(listOf(OrangeGradientStart, OrangeGradientEnd))
-    } else {
-        SolidColor(Color.Transparent)
-    }
-
     Box(
         modifier = modifier
-            .height(56.dp)
+            .height(64.dp)
             .shadow(
-                elevation = 4.dp,
-                shape = RoundedCornerShape(16.dp),
-                spotColor = Color.Black.copy(alpha = 0.05f)
+                elevation = 6.dp,
+                shape = RoundedCornerShape(24.dp),
+                spotColor = Color.Black.copy(alpha = 0.1f)
             )
-            .background(Color.White, RoundedCornerShape(16.dp))
-            .border(
-                width = if (isSelected) 1.5.dp else 0.dp,
-                brush = borderBrush,
-                shape = RoundedCornerShape(16.dp)
-            )
-            .clip(RoundedCornerShape(16.dp))
+            .background(Color.White, RoundedCornerShape(24.dp))
+            .clip(RoundedCornerShape(24.dp))
             .clickable { onClick() }
             .padding(horizontal = 12.dp, vertical = 8.dp),
         contentAlignment = Alignment.Center
@@ -333,100 +324,97 @@ private fun AccountTypeToggle(
                 text = label,
                 fontSize = 11.sp,
                 lineHeight = 14.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = TextPrimary
+                fontWeight = FontWeight.Medium,
+                color = Color.Black
             )
             Switch(
                 checked = isSelected,
                 onCheckedChange = { onClick() },
                 colors = SwitchDefaults.colors(
                     checkedThumbColor = Color.White,
-                    checkedTrackColor = TextPrimary,
+                    checkedTrackColor = activeTrackColor,
                     uncheckedThumbColor = Color.White,
-                    uncheckedTrackColor = Color(0xFFE0E0E0),
+                    uncheckedTrackColor = Color.Black,
                     uncheckedBorderColor = Color.Transparent
                 ),
-                modifier = Modifier.scale(0.75f) // Scale down switch to match design size
+                modifier = Modifier.scale(0.8f)
             )
         }
     }
 }
 
 @Composable
-private fun CustomInputField(
+private fun GradientInputField(
     value: String,
     onValueChange: (String) -> Unit,
     placeholder: String,
     icon: ImageVector
 ) {
-    val isFocused = value.isNotEmpty()
-
-    // Dynamic border color based on if the user has typed anything
-    val borderBrush = if (isFocused) {
-        Brush.horizontalGradient(listOf(OrangeGradientStart, OrangeGradientEnd))
-    } else {
-        SolidColor(Color(0xFFE0E0E0))
-    }
-
-    BasicTextField(
-        value = value,
-        onValueChange = onValueChange,
-        textStyle = TextStyle(
-            color = TextPrimary,
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Medium
-        ),
-        singleLine = true,
-        cursorBrush = SolidColor(TextPrimary),
-        decorationBox = { innerTextField ->
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(56.dp)
+            .shadow(
+                elevation = 6.dp,
+                shape = RoundedCornerShape(28.dp),
+                spotColor = Color(0xFFFF9800).copy(alpha = 0.5f)
+            )
+            .background(
+                brush = FieldGradient,
+                shape = RoundedCornerShape(28.dp)
+            )
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // White circular icon background
             Box(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(50.dp)
-                    .background(Color.White, RoundedCornerShape(50))
-                    .border(
-                        width = 1.dp,
-                        brush = borderBrush,
-                        shape = RoundedCornerShape(50)
-                    )
-                    .padding(horizontal = 6.dp),
+                    .size(40.dp)
+                    .background(Color.White, CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    modifier = Modifier.size(24.dp),
+                    tint = Color.Black
+                )
+            }
+
+            Spacer(modifier = Modifier.width(16.dp))
+
+            // Text input over the gradient
+            Box(
+                modifier = Modifier.weight(1f),
                 contentAlignment = Alignment.CenterStart
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    // Left circular icon container
-                    Box(
-                        modifier = Modifier
-                            .size(38.dp)
-                            .background(FieldBackground, CircleShape),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = icon,
-                            contentDescription = null,
-                            tint = if (isFocused) OrangeGradientStart else TextSecondary,
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
-                    Spacer(modifier = Modifier.width(12.dp))
-
-                    Box(modifier = Modifier.weight(1f)) {
-                        if (value.isEmpty()) {
-                            Text(
-                                text = placeholder,
-                                color = TextSecondary,
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Normal
-                            )
-                        }
-                        innerTextField()
-                    }
+                if (value.isEmpty()) {
+                    Text(
+                        text = placeholder,
+                        fontSize = 14.sp,
+                        color = Color.Black.copy(alpha = 0.7f),
+                        fontWeight = FontWeight.Normal
+                    )
                 }
+                BasicTextField(
+                    value = value,
+                    onValueChange = onValueChange,
+                    textStyle = TextStyle(
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = Color.Black
+                    ),
+                    singleLine = true,
+                    cursorBrush = SolidColor(Color.Black),
+                    modifier = Modifier.fillMaxWidth()
+                )
             }
         }
-    )
+    }
 }
 
 @Composable
@@ -437,17 +425,19 @@ private fun SubmitButton(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(54.dp)
-            .background(
-                brush = Brush.linearGradient(listOf(PurpleAccent, OrangeGradientStart)),
-                shape = RoundedCornerShape(50)
+            .height(56.dp)
+            .shadow(
+                elevation = 8.dp,
+                shape = RoundedCornerShape(28.dp),
+                spotColor = Color.Black.copy(alpha = 0.15f)
             )
-            .padding(2.dp) // creates the border effect
             .background(
-                color = if (isEnabled) Color.White else Color(0xFFF0F0F0),
-                shape = RoundedCornerShape(50)
+                brush = SubmitBorderGradient,
+                shape = RoundedCornerShape(28.dp)
             )
-            .clip(RoundedCornerShape(50))
+            .padding(1.5.dp) // Creates the gradient border effect
+            .clip(RoundedCornerShape(28.dp))
+            .background(Color.White) // Inner white background
             .clickable(enabled = isEnabled) { onClick() },
         contentAlignment = Alignment.Center
     ) {
@@ -455,13 +445,13 @@ private fun SubmitButton(
             text = "Submit",
             fontSize = 16.sp,
             fontWeight = FontWeight.Bold,
-            color = if (isEnabled) TextPrimary else TextSecondary
+            color = Color.Black
         )
     }
 }
 
 @Composable
-private fun LoadingOverlay() {
+private fun LoadingOverlayBank() {
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -475,7 +465,7 @@ private fun LoadingOverlay() {
             contentAlignment = Alignment.Center
         ) {
             CircularProgressIndicator(
-                color = OrangeGradientStart,
+                color = Color(0xFFFF6A00),
                 modifier = Modifier.size(48.dp)
             )
         }
@@ -490,7 +480,6 @@ private fun BoxScope.BackgroundDecorationBank() {
             .size(260.dp)
             .align(Alignment.TopEnd)
             .offset(x = 60.dp, y = (-60).dp)
-            .blur(radius = 50.dp)
             .background(
                 brush = Brush.linearGradient(listOf(OrangeGradientStart, OrangeGradientEnd)),
                 shape = CircleShape
@@ -502,10 +491,15 @@ private fun BoxScope.BackgroundDecorationBank() {
             .size(200.dp)
             .align(Alignment.BottomStart)
             .offset(x = (-60).dp, y = 60.dp)
-            .blur(radius = 50.dp)
             .background(
                 brush = Brush.linearGradient(listOf(OrangeGradientStart, OrangeGradientEnd)),
                 shape = CircleShape
             )
     )
+}
+
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+fun VerifyBankScreenPreview() {
+    VerifyBankScreen()
 }

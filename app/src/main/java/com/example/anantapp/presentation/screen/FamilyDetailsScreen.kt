@@ -39,6 +39,7 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
@@ -69,34 +70,42 @@ fun FamilyDetailsScreen(
             .fillMaxSize()
             .background(Color(0xFFF7F7F7)) // Light gray background
     ) {
-        // Decorative orange gradient circles in background
+        // Decorative solid orange circles in the background (not blur)
         Canvas(modifier = Modifier.fillMaxSize()) {
+            // Top Right Blob
             drawCircle(
-                brush = Brush.radialGradient(
-                    colors = listOf(Color(0xFFFF8C00).copy(alpha = 0.9f), Color.Transparent),
-                    center = Offset(0f, 0f),
-                    radius = 600f
-                ),
-                center = Offset(100f, 100f)
+                color = Color(0xFFFF8C00).copy(alpha = 0.6f),
+                center = Offset(size.width - 50f, 150f),
+                radius = 200f
             )
+            // Bottom Left Blob
             drawCircle(
-                brush = Brush.radialGradient(
-                    colors = listOf(Color(0xFFFF8C00).copy(alpha = 0.9f), Color.Transparent),
-                    center = Offset(size.width, size.height),
-                    radius = 500f
-                ),
-                center = Offset(size.width - 50f, size.height - 50f)
+                color = Color(0xFFFF8C00).copy(alpha = 0.6f),
+                center = Offset(100f, size.height - 150f),
+                radius = 150f
             )
         }
 
-        // Main White Card Container
+        // Main White Card Container with Glassmorphism
         Card(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 24.dp, vertical = 64.dp),
+                .padding(horizontal = 24.dp, vertical = 64.dp)
+                .shadow(
+                    elevation = 20.dp,
+                    shape = RoundedCornerShape(32.dp),
+                    ambientColor = Color.Black.copy(alpha = 0.1f),
+                    spotColor = Color.Black.copy(alpha = 0.15f)
+                )
+                .border(
+                    width = 1.5.dp,
+                    color = Color.White.copy(alpha = 0.5f),
+                    shape = RoundedCornerShape(32.dp)
+                ),
             shape = RoundedCornerShape(32.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
-            elevation = CardDefaults.cardElevation(defaultElevation = 16.dp)
+            colors = CardDefaults.cardColors(
+                containerColor = Color.White.copy(alpha = 0.7f) // Semi-transparent for glassmorphism
+            )
         ) {
             Column(
                 modifier = Modifier
@@ -118,7 +127,7 @@ fun FamilyDetailsScreen(
                                 color = Color(0xFFE0E0E0),
                                 shape = RoundedCornerShape(16.dp)
                             )
-                            .background(Color.White, RoundedCornerShape(16.dp))
+                            .background(Color.White.copy(alpha = 0.5f), RoundedCornerShape(16.dp))
                             .padding(horizontal = 16.dp, vertical = 6.dp),
                         contentAlignment = Alignment.Center
                     ) {
@@ -200,7 +209,7 @@ fun FamilyDetailsScreen(
                     onCheckedChange = { hasChildren = it }
                 )
 
-                // Expanded Section for Children (Matches verify 17.jpg)
+                // Expanded Section for Children
                 AnimatedVisibility(
                     visible = hasChildren,
                     enter = expandVertically() + fadeIn(),
@@ -304,7 +313,7 @@ fun AddPillButton(
     Box(
         modifier = Modifier
             .shadow(elevation = 4.dp, shape = RoundedCornerShape(24.dp))
-            .background(Color(0xFFF5F5F5), RoundedCornerShape(24.dp))
+            .background(Color(0xFFF5F5F5).copy(alpha = 0.6f), RoundedCornerShape(24.dp))
             .clickable { onClick() }
             .padding(horizontal = 16.dp, vertical = 8.dp),
         contentAlignment = Alignment.Center
@@ -509,4 +518,10 @@ fun FamilyLineArtIcon() {
             style = Stroke(width = strokeWidth, cap = StrokeCap.Round)
         )
     }
+}
+
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+fun FamilyDetailsScreenPreview() {
+    FamilyDetailsScreen(onSkip = {}, onSubmit = {})
 }

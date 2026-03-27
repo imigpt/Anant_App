@@ -22,8 +22,8 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Phone
+import androidx.compose.material.icons.filled.PhoneAndroid
+import androidx.compose.material.icons.filled.VpnKey
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -38,8 +38,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -53,9 +56,13 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.anantapp.R
 import com.example.anantapp.ui.theme.AnantAppTheme
 
-// Gradient Colors for Icons and Login Button
-private val PinkGradientStart = Color(0xFFE233FF)
-private val PinkGradientEnd = Color(0xFFFF4848)
+// Gradient Colors for Icons matching the design
+private val PinkGradientStart = Color(0xFF8D14FF)
+private val PinkGradientEnd = Color(0xFFFF1E4F)
+
+// Background Gradient Colors
+private val BgGradientStart = Color(0xFFFBF1B6)
+private val BgGradientEnd = Color(0xFF958F6C)
 
 @Composable
 fun LoginScreen(
@@ -81,51 +88,58 @@ fun LoginScreen(
         }
     }
 
+    // Outer Background with soft yellowish/gray gradient
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White) // Clean white background
+            .background(Brush.verticalGradient(listOf(BgGradientStart, BgGradientEnd)))
     ) {
+        // Inner White Card with heavily rounded top corners and shadow
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .padding(top = 100.dp) // Space for the top background to show
+                .shadow(
+                    elevation = 20.dp,
+                    shape = RoundedCornerShape(topStart = 48.dp, topEnd = 48.dp),
+                    clip = false
+                )
+                .background(
+                    color = Color.White,
+                    shape = RoundedCornerShape(topStart = 48.dp, topEnd = 48.dp)
+                )
                 .padding(horizontal = 24.dp)
                 .verticalScroll(scrollState),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.height(48.dp))
 
-            // 1. Logo at the top center
+            // 1. Logo
             Image(
-                painter = painterResource(id = R.drawable.anant_logo), // Replace with your logo's file name
+                painter = painterResource(id = R.drawable.anant_logo),
                 contentDescription = "App Logo",
                 modifier = Modifier
-                    .size(100.dp)
-                    .clip(CircleShape),
-                contentScale = ContentScale.Fit
+                    .fillMaxWidth()
+                    .height(100.dp),
+                // Adjusted to fit horizontal logo layout
+                contentScale = ContentScale.Crop
             )
 
-            Spacer(modifier = Modifier.height(32.dp))
+//            Spacer(modifier = Modifier.height(48.dp))
 
-            // 2. Left-Aligned Header Text
+            // 2. Left-Aligned Title "Login"
             Column(modifier = Modifier.fillMaxWidth()) {
                 Text(
-                    text = "Login Account",
-                    fontSize = 28.sp,
-                    fontWeight = FontWeight.ExtraBold,
+                    text = "Login",
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.Bold,
                     color = Color.Black
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "Hello, welcome back to our account!",
-                    fontSize = 14.sp,
-                    color = Color.Gray
                 )
             }
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
-            // 3. Phone & OTP Input Fields
+            // 3. Inputs (Mobile & OTP)
             LoginForm(
                 uiState = uiState,
                 onPhoneNumberChange = viewModel::onPhoneNumberChange,
@@ -135,52 +149,50 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // 4. Full-Width Gradient Login Button
+            // 4. Divider
+            DividerWithText(text = "Or continue with")
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            // 5. Apple Login Button
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp)
+                    .shadow(elevation = 4.dp, shape = RoundedCornerShape(50))
                     .clip(RoundedCornerShape(50))
-                    .background(Brush.linearGradient(listOf(PinkGradientStart, PinkGradientEnd)))
-                    .clickable { viewModel.verifyOtp() },
+                    .background(Color.Black)
+                    .clickable { /* Handle Apple Login */ },
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = "Login",
-                    color = Color.White,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            // 5. Divider
-            DividerWithText(text = "Or login with")
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            // 6. Social Media Login Buttons Row
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Center
-            ) {
-                // Ensure you have these icons in your res/drawable folder
-                SocialLoginButton(iconResId = R.drawable.ic_google, contentDescription = "Google")
-                Spacer(modifier = Modifier.width(20.dp))
-                SocialLoginButton(iconResId = R.drawable.ic_apple, contentDescription = "Apple")
-                Spacer(modifier = Modifier.width(20.dp))
-                SocialLoginButton(iconResId = R.drawable.ic_facebook, contentDescription = "Facebook")
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    // Make sure you have an ic_apple.xml in your drawables
+                    Image(
+                        painter = painterResource(id = R.drawable.ic_apple),
+                        contentDescription = "Apple Logo",
+                        modifier = Modifier.size(24.dp),
+                        colorFilter = ColorFilter.tint(Color.White)
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Text(
+                        text = "Login with Apple",
+                        color = Color.White,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.weight(1f, fill = false))
             Spacer(modifier = Modifier.height(48.dp))
 
-            // 7. Bottom Registration Link
+            // 6. Footer Registration Link
             RegisterLink(onNavigate = onNavigateToRegister)
         }
 
-        // Snackbar host for error/success messages
         SnackbarHost(
             hostState = snackbarHostState,
             modifier = Modifier
@@ -202,18 +214,18 @@ private fun LoginForm(
     onRequestOtpClick: () -> Unit
 ) {
     Column {
-        // Custom Pill-shaped Mobile Input
+        // Mobile Number Input
         CustomInputField(
             value = uiState.phoneNumber,
             onValueChange = onPhoneNumberChange,
-            hint = "Mobile Number",
+            hint = "Enter Mobile Number",
             icon = {
                 IconGradientCircle {
                     Icon(
-                        imageVector = Icons.Default.Phone,
+                        imageVector = Icons.Default.PhoneAndroid, // Looks closer to a mobile phone
                         contentDescription = "Phone",
                         tint = Color.White,
-                        modifier = Modifier.size(16.dp)
+                        modifier = Modifier.size(18.dp)
                     )
                 }
             },
@@ -222,7 +234,7 @@ private fun LoginForm(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Custom Pill-shaped OTP Input with inline button
+        // OTP Input
         CustomInputField(
             value = uiState.otp,
             onValueChange = onOtpChange,
@@ -230,10 +242,10 @@ private fun LoginForm(
             icon = {
                 IconGradientCircle {
                     Icon(
-                        imageVector = Icons.Default.Lock,
+                        imageVector = Icons.Default.VpnKey, // Looks closer to a key
                         contentDescription = "OTP Key",
                         tint = Color.White,
-                        modifier = Modifier.size(16.dp)
+                        modifier = Modifier.size(18.dp)
                     )
                 }
             },
@@ -244,7 +256,8 @@ private fun LoginForm(
                         .border(1.dp, Color.Gray, RoundedCornerShape(50))
                         .clip(RoundedCornerShape(50))
                         .clickable { onRequestOtpClick() }
-                        .padding(horizontal = 12.dp, vertical = 6.dp)
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    contentAlignment = Alignment.Center
                 ) {
                     Text(
                         text = "request otp",
@@ -271,17 +284,22 @@ private fun CustomInputField(
         modifier = Modifier
             .fillMaxWidth()
             .height(56.dp)
-            .border(1.dp, Color(0xFFE0E0E0), RoundedCornerShape(50)) // Light gray border
+            .border(1.dp, Color(0xFF6C6C6C), RoundedCornerShape(50)) // Thin dark gray border
             .background(Color.White, RoundedCornerShape(50))
-            .padding(horizontal = 12.dp),
+            .padding(horizontal = 8.dp), // Inner padding for the circle icon
         verticalAlignment = Alignment.CenterVertically
     ) {
         icon()
         Spacer(modifier = Modifier.width(12.dp))
-        
-        Box(modifier = Modifier.weight(1f)) {
+
+        Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.CenterStart) {
             if (value.isEmpty()) {
-                Text(text = hint, color = Color.Gray, fontSize = 14.sp)
+                Text(
+                    text = hint,
+                    color = Color(0xFFAAAAAA),
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium
+                )
             }
             BasicTextField(
                 value = value,
@@ -289,12 +307,12 @@ private fun CustomInputField(
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
                 textStyle = TextStyle(color = Color.Black, fontSize = 14.sp),
+                cursorBrush = SolidColor(Color.Black),
                 modifier = Modifier.fillMaxWidth()
             )
         }
-        
+
         if (trailingContent != null) {
-            Spacer(modifier = Modifier.width(8.dp))
             trailingContent()
         }
     }
@@ -304,32 +322,16 @@ private fun CustomInputField(
 private fun IconGradientCircle(content: @Composable () -> Unit) {
     Box(
         modifier = Modifier
-            .size(36.dp)
+            .size(40.dp)
             .background(
-                Brush.linearGradient(listOf(PinkGradientStart, PinkGradientEnd)),
-                CircleShape
+                Brush.linearGradient(
+                    colors = listOf(PinkGradientStart, PinkGradientEnd)
+                ),
+                shape = CircleShape
             ),
         contentAlignment = Alignment.Center
     ) {
         content()
-    }
-}
-
-@Composable
-private fun SocialLoginButton(iconResId: Int, contentDescription: String) {
-    Box(
-        modifier = Modifier
-            .size(56.dp)
-            .border(1.dp, Color(0xFFE0E0E0), CircleShape) // Light gray circle border
-            .clip(CircleShape)
-            .clickable { /* Handle click */ },
-        contentAlignment = Alignment.Center
-    ) {
-        Image(
-            painter = painterResource(id = iconResId),
-            contentDescription = contentDescription,
-            modifier = Modifier.size(24.dp)
-        )
     }
 }
 
@@ -342,17 +344,19 @@ private fun DividerWithText(text: String) {
     ) {
         HorizontalDivider(
             modifier = Modifier.weight(1f),
-            color = Color(0xFFE0E0E0)
+            color = Color(0xFFE0E0E0),
+            thickness = 1.dp
         )
         Text(
             text = text,
             modifier = Modifier.padding(horizontal = 16.dp),
-            style = MaterialTheme.typography.bodySmall,
+            fontSize = 14.sp,
             color = Color.Gray
         )
         HorizontalDivider(
             modifier = Modifier.weight(1f),
-            color = Color(0xFFE0E0E0)
+            color = Color(0xFFE0E0E0),
+            thickness = 1.dp
         )
     }
 }
@@ -367,17 +371,18 @@ private fun RegisterLink(onNavigate: () -> Unit) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
-            text = "Not register yet?",
-            style = MaterialTheme.typography.bodySmall,
-            color = Color.Gray
+            text = "No account yet?",
+            fontSize = 14.sp,
+            color = Color.Gray,
+            fontWeight = FontWeight.Medium
         )
         Spacer(modifier = Modifier.width(4.dp))
         Text(
-            text = "Create Account",
-            fontSize = 12.sp,
-            color = Color.Black,
-            fontWeight = FontWeight.Bold, // Made bold to match the image perfectly
-            textDecoration = TextDecoration.Underline, // Underlined to match the image
+            text = "Register now",
+            fontSize = 14.sp,
+            color = Color.Gray, // Keeping it gray to match the image closely
+            fontWeight = FontWeight.Bold,
+            textDecoration = TextDecoration.Underline,
             modifier = Modifier.clickable { onNavigate() }
         )
     }

@@ -9,24 +9,23 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowForward
-import androidx.compose.material.icons.filled.CurrencyRupee
-import androidx.compose.material.icons.outlined.AccountBalance
-import androidx.compose.material.icons.outlined.BarChart
+import androidx.compose.material.icons.filled.ArrowOutward
 import androidx.compose.material.icons.outlined.Calculate
 import androidx.compose.material.icons.outlined.CalendarToday
+import androidx.compose.material.icons.outlined.CurrencyRupee
+import androidx.compose.material.icons.outlined.InsertChartOutlined
 import androidx.compose.material.icons.outlined.Key
 import androidx.compose.material.icons.outlined.Lock
-import androidx.compose.material.icons.outlined.Person
-import androidx.compose.material.icons.outlined.TextFormat
+import androidx.compose.material.icons.outlined.MoreHoriz
+import androidx.compose.material.icons.outlined.PersonOutline
+import androidx.compose.material.icons.outlined.SaveAlt
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -35,16 +34,27 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
+// Reusable gradients based on the image
+private val FieldGradient = Brush.horizontalGradient(
+    colors = listOf(Color(0xFFFF6A00), Color(0xFFFFC400))
+)
+private val SubmitBorderGradient = Brush.horizontalGradient(
+    colors = listOf(Color(0xFF9000FF), Color(0xFFFF007A), Color(0xFFFF8C00))
+)
+
 @Composable
 fun VerifyIncomeScreen(
-    onSkip: () -> Unit,
-    onSubmit: () -> Unit
+    onSkip: () -> Unit = {},
+    onSubmit: () -> Unit = {}
 ) {
     var showAddNomineeScreen by remember { mutableStateOf(false) }
 
@@ -66,35 +76,48 @@ fun VerifyIncomeScreen(
             .fillMaxSize()
             .background(Color(0xFFF7F7F7))
     ) {
-        // Decorative orange circles in background
+        // Soft gradient background blobs (not blur)
         Canvas(modifier = Modifier.fillMaxSize()) {
+            // Top Right Blob
             drawCircle(
-                color = Color(0xFFFF8C00),
-                center = Offset(size.width, 100f),
-                radius = 350f
+                color = Color(0xFFFF9800).copy(alpha = 0.6f),
+                center = Offset(size.width - 50f, 150f),
+                radius = 250f
             )
+            // Bottom Left Blob
             drawCircle(
-                color = Color(0xFFFF8C00),
-                center = Offset(0f, size.height),
-                radius = 300f
+                color = Color(0xFFFF9800).copy(alpha = 0.6f),
+                center = Offset(100f, size.height - 150f),
+                radius = 200f
             )
         }
 
-        // Main White Card Container
+        // Main Card Container with Glassmorphism
         Card(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 24.dp, vertical = 56.dp),
+                .padding(horizontal = 24.dp, vertical = 56.dp)
+                .shadow(
+                    elevation = 20.dp,
+                    shape = RoundedCornerShape(24.dp),
+                    ambientColor = Color.Black.copy(alpha = 0.1f),
+                    spotColor = Color.Black.copy(alpha = 0.2f)
+                )
+                .border(
+                    width = 1.5.dp,
+                    color = Color.White.copy(alpha = 0.5f),
+                    shape = RoundedCornerShape(24.dp)
+                ),
             shape = RoundedCornerShape(24.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.98f)),
-            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+            colors = CardDefaults.cardColors(
+                containerColor = Color.White.copy(alpha = 0.75f) // Semi-transparent for glassmorphism
+            )
         ) {
             Crossfade(targetState = showAddNomineeScreen, label = "ScreenTransition") { showingNominee ->
-                // The crucial fix: Each screen state is wrapped in its own scrollable Column
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(24.dp)
+                        .padding(horizontal = 24.dp, vertical = 20.dp)
                         .verticalScroll(rememberScrollState()),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
@@ -162,7 +185,7 @@ fun MainIncomeContent(
                     color = Color(0xFFE0E0E0),
                     shape = RoundedCornerShape(16.dp)
                 )
-                .background(Color.White, RoundedCornerShape(16.dp))
+                .background(Color.White.copy(alpha = 0.5f), RoundedCornerShape(16.dp))
                 .padding(horizontal = 16.dp, vertical = 6.dp),
             contentAlignment = Alignment.Center
         ) {
@@ -181,14 +204,14 @@ fun MainIncomeContent(
     Box(
         modifier = Modifier
             .size(80.dp)
-            .border(3.dp, Color.Black, CircleShape)
+            .border(2.dp, Color.Black, CircleShape)
             .padding(16.dp),
         contentAlignment = Alignment.Center
     ) {
         Icon(
-            imageVector = Icons.Default.CurrencyRupee,
+            imageVector = Icons.Outlined.CurrencyRupee,
             contentDescription = "Income Verification Icon",
-            modifier = Modifier.size(40.dp),
+            modifier = Modifier.size(44.dp),
             tint = Color.Black
         )
     }
@@ -211,79 +234,73 @@ fun MainIncomeContent(
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        AppInputField(
-            leadingIcon = Icons.Outlined.BarChart,
-            hint = "Gross salary annually",
+        IncomeGradientInputField(
+            leadingIcon = Icons.Outlined.InsertChartOutlined,
+            hint = "Gross salary anually",
             value = grossSalary,
             onValueChange = onGrossSalaryChange
         )
-        AppInputField(
+        IncomeGradientInputField(
             leadingIcon = Icons.Outlined.Calculate,
             hint = "Net salary",
             value = netSalary,
             onValueChange = onNetSalaryChange
         )
-        AppInputField(
-            leadingIcon = Icons.Outlined.AccountBalance,
+        IncomeGradientInputField(
+            leadingIcon = Icons.Outlined.SaveAlt,
             hint = "Salary account number",
             value = accountNumber,
             onValueChange = onAccountNumberChange
         )
-        AppInputField(
-            leadingIcon = Icons.Outlined.TextFormat,
+        IncomeGradientInputField(
+            leadingIcon = Icons.Outlined.MoreHoriz,
             hint = "IFSC code",
             value = ifscCode,
             onValueChange = onIfscCodeChange
         )
 
-        // Special "Add Nominee" Button configured exactly like an input field
+        // Special "Add Nominee" Button
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp)
-                .shadow(2.dp, RoundedCornerShape(28.dp))
-                .background(
-                    brush = Brush.horizontalGradient(
-                        colors = listOf(Color(0xFFFF8C00), Color(0xFFFFD700))
-                    ),
-                    shape = RoundedCornerShape(28.dp)
-                )
-                .padding(2.dp)
-                .background(Color.White, RoundedCornerShape(28.dp))
+                .shadow(elevation = 6.dp, shape = RoundedCornerShape(28.dp), spotColor = Color(0xFFFF9800).copy(alpha = 0.5f))
+                .background(brush = FieldGradient, shape = RoundedCornerShape(28.dp))
                 .clickable { onAddNomineeClick() }
         ) {
             Row(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(horizontal = 6.dp),
+                    .padding(horizontal = 8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Box(
                     modifier = Modifier
                         .size(40.dp)
-                        .background(Color.White, CircleShape)
-                        .border(2.dp, Color(0xFFFF8C00), CircleShape),
+                        .background(Color.White, CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        imageVector = Icons.Outlined.Person,
+                        imageVector = Icons.Outlined.PersonOutline,
                         contentDescription = "Nominee Icon",
-                        modifier = Modifier.size(20.dp),
+                        modifier = Modifier.size(24.dp),
                         tint = Color.Black
                     )
                 }
-                Spacer(modifier = Modifier.width(12.dp))
+                Spacer(modifier = Modifier.width(16.dp))
                 Text(
                     text = "Add Nominee",
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold,
                     color = Color.Black
                 )
                 Spacer(modifier = Modifier.weight(1f))
                 Icon(
-                    imageVector = Icons.Default.ArrowForward,
+                    imageVector = Icons.Default.ArrowOutward, // Diagonal arrow pointing up-right
                     contentDescription = "Go",
-                    modifier = Modifier.size(20.dp).padding(end = 8.dp),
+                    modifier = Modifier
+                        .size(20.dp)
+                        .padding(end = 8.dp),
                     tint = Color.Black
                 )
             }
@@ -292,26 +309,21 @@ fun MainIncomeContent(
 
     Spacer(modifier = Modifier.height(48.dp))
 
-    // Submit Button
+    // Gradient Bordered Submit Button
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .height(56.dp)
             .shadow(4.dp, RoundedCornerShape(28.dp))
-            .background(
-                brush = Brush.horizontalGradient(
-                    colors = listOf(Color(0xFF9C27B0), Color(0xFFE91E63), Color(0xFFFF8C00))
-                ),
-                shape = RoundedCornerShape(28.dp)
-            )
-            .padding(2.dp)
-            .background(Color.White, RoundedCornerShape(28.dp))
+            .background(brush = SubmitBorderGradient, shape = RoundedCornerShape(28.dp))
+            .padding(2.dp) // Border thickness
+            .background(Color.White, RoundedCornerShape(26.dp))
             .clickable { onSubmit() },
         contentAlignment = Alignment.Center
     ) {
         Text(
             text = "Submit",
-            fontSize = 18.sp,
+            fontSize = 16.sp,
             fontWeight = FontWeight.Bold,
             color = Color.Black
         )
@@ -370,7 +382,7 @@ fun NomineeScreenContent(
                     color = Color(0xFFE0E0E0),
                     shape = RoundedCornerShape(16.dp)
                 )
-                .background(Color.White, RoundedCornerShape(16.dp))
+                .background(Color.White.copy(alpha = 0.5f), RoundedCornerShape(16.dp))
                 .padding(horizontal = 16.dp, vertical = 6.dp),
             contentAlignment = Alignment.Center
         ) {
@@ -389,14 +401,14 @@ fun NomineeScreenContent(
     Box(
         modifier = Modifier
             .size(80.dp)
-            .border(3.dp, Color.Black, CircleShape)
+            .border(2.dp, Color.Black, CircleShape)
             .padding(16.dp),
         contentAlignment = Alignment.Center
     ) {
         Icon(
-            imageVector = Icons.Default.CurrencyRupee,
+            imageVector = Icons.Outlined.CurrencyRupee,
             contentDescription = "Income Icon",
-            modifier = Modifier.size(40.dp),
+            modifier = Modifier.size(44.dp),
             tint = Color.Black
         )
     }
@@ -405,7 +417,7 @@ fun NomineeScreenContent(
 
     // Nominee Title
     Text(
-        text = "Add Nominee Details",
+        text = "Add Nominee",
         fontSize = 24.sp,
         fontWeight = FontWeight.Bold,
         color = Color.Black,
@@ -419,33 +431,32 @@ fun NomineeScreenContent(
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        AppInputField(
-            leadingIcon = Icons.Outlined.Person,
+        IncomeGradientInputField(
+            leadingIcon = Icons.Outlined.PersonOutline,
             hint = "Full Name",
             value = fullName,
             onValueChange = onFullNameChange
         )
-        AppInputField(
+        IncomeGradientInputField(
             leadingIcon = Icons.Outlined.CalendarToday,
-            trailingIcon = Icons.Outlined.CalendarToday,
             hint = "Date of Birth",
             value = dob,
             onValueChange = onDobChange
         )
-        AppInputField(
+        IncomeGradientInputField(
             leadingIcon = Icons.Outlined.Key,
             hint = "Bank Account Number",
             value = accountNumber,
             onValueChange = onAccountNumberChange
         )
-        AppInputField(
-            leadingIcon = Icons.Outlined.TextFormat,
+        IncomeGradientInputField(
+            leadingIcon = Icons.Outlined.MoreHoriz,
             hint = "IFSC code",
             value = ifscCode,
             onValueChange = onIfscCodeChange
         )
-        AppInputField(
-            leadingIcon = Icons.Outlined.BarChart,
+        IncomeGradientInputField(
+            leadingIcon = Icons.Outlined.InsertChartOutlined,
             hint = "% Share of Funds",
             value = shareOfFunds,
             onValueChange = onShareOfFundsChange
@@ -460,20 +471,15 @@ fun NomineeScreenContent(
             .fillMaxWidth()
             .height(56.dp)
             .shadow(4.dp, RoundedCornerShape(28.dp))
-            .background(
-                brush = Brush.horizontalGradient(
-                    colors = listOf(Color(0xFF9C27B0), Color(0xFFE91E63), Color(0xFFFF8C00))
-                ),
-                shape = RoundedCornerShape(28.dp)
-            )
+            .background(brush = SubmitBorderGradient, shape = RoundedCornerShape(28.dp))
             .padding(2.dp)
-            .background(Color.White, RoundedCornerShape(28.dp))
+            .background(Color.White, RoundedCornerShape(26.dp))
             .clickable { onSubmit() },
         contentAlignment = Alignment.Center
     ) {
         Text(
             text = "Submit",
-            fontSize = 18.sp,
+            fontSize = 16.sp,
             fontWeight = FontWeight.Bold,
             color = Color.Black
         )
@@ -484,9 +490,8 @@ fun NomineeScreenContent(
 }
 
 @Composable
-fun AppInputField(
+private fun IncomeGradientInputField(
     leadingIcon: ImageVector,
-    trailingIcon: ImageVector? = null,
     hint: String,
     value: String,
     onValueChange: (String) -> Unit
@@ -495,69 +500,66 @@ fun AppInputField(
         modifier = Modifier
             .fillMaxWidth()
             .height(56.dp)
-            .shadow(2.dp, RoundedCornerShape(28.dp))
+            .shadow(
+                elevation = 6.dp,
+                shape = RoundedCornerShape(28.dp),
+                spotColor = Color(0xFFFF9800).copy(alpha = 0.5f) // Warm drop shadow
+            )
             .background(
-                brush = Brush.horizontalGradient(
-                    colors = listOf(Color(0xFFFF8C00), Color(0xFFFFD700))
-                ),
+                brush = FieldGradient,
                 shape = RoundedCornerShape(28.dp)
             )
-            .padding(2.dp) // Creates the gradient border
     ) {
-        OutlinedTextField(
-            value = value,
-            onValueChange = onValueChange,
+        Row(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color.White, RoundedCornerShape(28.dp)),
-            placeholder = {
-                Text(
-                    text = hint,
-                    fontSize = 15.sp,
-                    color = Color.Black.copy(alpha = 0.6f)
+                .padding(horizontal = 8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // White circular icon background
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .background(Color.White, CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = leadingIcon,
+                    contentDescription = null,
+                    modifier = Modifier.size(24.dp),
+                    tint = Color.Black
                 )
-            },
-            textStyle = androidx.compose.ui.text.TextStyle(
-                fontSize = 15.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = Color.Black
-            ),
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = Color.Transparent,
-                unfocusedBorderColor = Color.Transparent,
-                focusedContainerColor = Color.Transparent,
-                unfocusedContainerColor = Color.Transparent
-            ),
-            shape = RoundedCornerShape(28.dp),
-            singleLine = true,
-            leadingIcon = {
-                Box(
-                    modifier = Modifier
-                        .padding(start = 6.dp)
-                        .size(40.dp)
-                        .background(Color.White, CircleShape)
-                        .border(2.dp, Color(0xFFFF8C00), CircleShape),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = leadingIcon,
-                        contentDescription = null,
-                        modifier = Modifier.size(20.dp),
-                        tint = Color.Black
+            }
+
+            Spacer(modifier = Modifier.width(16.dp))
+
+            // Text input over the gradient
+            Box(
+                modifier = Modifier.weight(1f),
+                contentAlignment = Alignment.CenterStart
+            ) {
+                if (value.isEmpty()) {
+                    Text(
+                        text = hint,
+                        fontSize = 14.sp,
+                        color = Color.Black.copy(alpha = 0.7f),
+                        fontWeight = FontWeight.Normal
                     )
                 }
-            },
-            trailingIcon = if (trailingIcon != null) {
-                {
-                    Icon(
-                        imageVector = trailingIcon,
-                        contentDescription = null,
-                        modifier = Modifier.size(24.dp).padding(end = 12.dp),
-                        tint = Color.Black
-                    )
-                }
-            } else null
-        )
+                BasicTextField(
+                    value = value,
+                    onValueChange = onValueChange,
+                    textStyle = TextStyle(
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = Color.Black
+                    ),
+                    singleLine = true,
+                    cursorBrush = SolidColor(Color.Black),
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        }
     }
 }
 
@@ -573,7 +575,7 @@ fun PrivacyFooter() {
         Icon(
             imageVector = Icons.Outlined.Lock,
             contentDescription = "Privacy Lock",
-            tint = Color(0xFFB0B0B0),
+            tint = Color(0xFFFFB74D), // Light orange tint to match image
             modifier = Modifier.size(14.dp)
         )
         Spacer(modifier = Modifier.width(6.dp))
@@ -584,4 +586,10 @@ fun PrivacyFooter() {
             fontWeight = FontWeight.Medium
         )
     }
+}
+
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+fun VerifyIncomeScreenPreview() {
+    VerifyIncomeScreen()
 }

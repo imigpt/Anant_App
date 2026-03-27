@@ -71,6 +71,16 @@ dependencies {
     // Coil for Image Loading
     implementation(libs.coil.compose)
 
+    // ML Kit for QR Code Scanning
+    implementation("com.google.mlkit:barcode-scanning:17.2.0")
+    implementation("com.google.mlkit:vision-common:17.3.0")
+
+    // CameraX for Camera Preview
+    implementation("androidx.camera:camera-core:1.3.0")
+    implementation("androidx.camera:camera-camera2:1.3.0")
+    implementation("androidx.camera:camera-lifecycle:1.3.0")
+    implementation("androidx.camera:camera-view:1.3.0")
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

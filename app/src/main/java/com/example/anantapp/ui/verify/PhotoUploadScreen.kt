@@ -27,6 +27,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -214,28 +215,13 @@ private fun PhotoUploadCard(
             }
 
             Spacer(modifier = Modifier.height(16.dp))
-
-            // Camera Icon Circle
-            Box(
-                modifier = Modifier
-                    .size(80.dp)
-                    .background(
-                        brush = Brush.radialGradient(
-                            listOf(OrangeGradientStart, OrangeGradientEnd),
-                            radius = 50f
-                        ),
-                        shape = CircleShape
-                    ),
-                contentAlignment = Alignment.Center
-            ) {
                 Icon(
-                    imageVector = Icons.Filled.PhotoCamera,
+                    imageVector = Icons.Filled.CameraAlt,
                     contentDescription = "Camera",
-                    tint = Color.White,
-                    modifier = Modifier.size(40.dp)
+                    tint = Color.Black,
+                    modifier = Modifier.size(60.dp)
                 )
-            }
-
+            
             Spacer(modifier = Modifier.height(20.dp))
 
             // Title
@@ -507,7 +493,6 @@ private fun BoxScope.BackgroundDecorationPhoto() {
             .size(260.dp)
             .align(Alignment.TopEnd)
             .offset(x = 60.dp, y = (-60).dp)
-            .blur(radius = 50.dp)
             .background(
                 brush = Brush.linearGradient(listOf(OrangeGradientStart, OrangeGradientEnd)),
                 shape = CircleShape
@@ -519,10 +504,15 @@ private fun BoxScope.BackgroundDecorationPhoto() {
             .size(200.dp)
             .align(Alignment.BottomStart)
             .offset(x = (-60).dp, y = 60.dp)
-            .blur(radius = 50.dp)
             .background(
                 brush = Brush.linearGradient(listOf(OrangeGradientStart, OrangeGradientEnd)),
                 shape = CircleShape
             )
     )
+}
+
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+fun PhotoUploadScreenPreview() {
+    PhotoUploadScreen()
 }

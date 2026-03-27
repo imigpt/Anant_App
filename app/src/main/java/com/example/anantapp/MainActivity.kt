@@ -43,10 +43,19 @@ import com.example.anantapp.presentation.screen.VerifyIncomeScreen
 import com.example.anantapp.ui.login.LoginScreen
 import com.example.anantapp.ui.onboarding.OnboardingScreen
 import com.example.anantapp.ui.theme.AnantAppTheme
+import com.example.anantapp.ui.screens.QRCodeScannerScreen
+import com.example.anantapp.ui.screens.AddNomineeCardsScreen
+import com.example.anantapp.ui.screens.NomineeDetailsScreen
+import com.example.anantapp.ui.screens.NomineeOTPVerificationScreen
+import com.example.anantapp.ui.screens.FamilyMemberDetailsScreen
 import com.example.anantapp.ui.verify.PhotoUploadScreen
 import com.example.anantapp.ui.verify.VerifyAddressScreen
 import com.example.anantapp.ui.verify.VerifyBankScreen
 import com.example.anantapp.ui.verify.VerifyScreen
+import android.content.Intent
+import androidx.activity.result.contract.ActivityResultContracts
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -65,13 +74,13 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 private fun MainContent(modifier: Modifier = Modifier) {
-    val orderSuccessComplete = remember { mutableStateOf(false) }
-    val orderStatusComplete = remember { mutableStateOf(false) }
-    val viewQRCodeComplete = remember { mutableStateOf(false) }
-    val generateQRInfoComplete = remember { mutableStateOf(false) }
-    val generateQRCodeComplete = remember { mutableStateOf(false) }
-    val userDetailsComplete = remember { mutableStateOf(false) }
-    val deliveryAddressComplete = remember { mutableStateOf(false) }
+    val orderSuccessComplete = remember { mutableStateOf(true) }
+    val orderStatusComplete = remember { mutableStateOf(true) }
+    val viewQRCodeComplete = remember { mutableStateOf(true) }
+    val generateQRInfoComplete = remember { mutableStateOf(true) }
+    val generateQRCodeComplete = remember { mutableStateOf(true) }
+    val userDetailsComplete = remember { mutableStateOf(true) }
+    val deliveryAddressComplete = remember { mutableStateOf(true) }
     val onboardingComplete = remember { mutableStateOf(true) }
     val loginComplete = remember { mutableStateOf(true) }
     val documentVerified = remember { mutableStateOf(true) }
@@ -83,12 +92,55 @@ private fun MainContent(modifier: Modifier = Modifier) {
     val insuranceDetailsComplete = remember { mutableStateOf(true) }
     val verifyIncomeComplete = remember { mutableStateOf(true) }
     val governmentFundraisersComplete = remember { mutableStateOf(true) }
-    val currentScreen = remember { mutableStateOf("fundraiser") } // Start with fundraiser screen
+    val currentScreen = remember { mutableStateOf("add_nominee_cards") } // Start with Add Nominee Cards screen
+    val currentSubScreen = remember { mutableStateOf("") } // For sub-screens within nominee flow
+    val currentOTPType = remember { mutableStateOf("nominee") } // Track OTP screen type: "nominee" or "family_member"
 
     // Wrap the routing logic in a Box that uses the passed modifier.
     // This ensures every screen respects the safe-area padding from the Scaffold.
     Box(modifier = modifier) {
         when {
+            // Show Add Nominee Cards first if currentScreen is add_nominee_cards
+            currentScreen.value == "add_nominee_cards" && (
+                orderSuccessComplete.value &&
+                orderStatusComplete.value &&
+                viewQRCodeComplete.value &&
+                generateQRInfoComplete.value &&
+                generateQRCodeComplete.value &&
+                userDetailsComplete.value &&
+                deliveryAddressComplete.value &&
+                onboardingComplete.value &&
+                loginComplete.value &&
+                documentVerified.value &&
+                bankVerified.value &&
+                addressVerified.value &&
+                photoUploaded.value &&
+                locationVerified.value &&
+                familyDetailsComplete.value &&
+                insuranceDetailsComplete.value &&
+                verifyIncomeComplete.value &&
+                governmentFundraisersComplete.value
+            ) -> {
+                AddNomineeCardsScreen(
+                    onAddNomineeClick = {
+                        // Navigate to Nominee Details
+                        currentScreen.value = "nominee_details"
+                    },
+                    onAddFamilyMemberClick = {
+                        // Navigate to Family Member Details
+                        currentScreen.value = "family_member_details"
+                    },
+                    onShareLocationClick = {
+                        // Handle share location
+                        currentScreen.value = "home"
+                    },
+                    onSkipClick = {
+                        // Handle skip
+                        currentScreen.value = "home"
+                    }
+                )
+            }
+
             !orderSuccessComplete.value -> {
                 OrderSuccessScreen(
                     onDownloadPDFClick = {
@@ -302,6 +354,17 @@ private fun MainContent(modifier: Modifier = Modifier) {
             else -> {
                 // All verifications complete - navigate based on current screen
                 when (currentScreen.value) {
+                    "qr_scanner" -> {
+                        QRCodeScannerScreen(
+                            onQRCodeDetected = { qrCode ->
+                                // Handle detected QR code
+                                if (qrCode.isNotEmpty()) {
+                                    currentScreen.value = "home"
+                                }
+                            }
+                        )
+                    }
+
                     "fundraiser" -> {
                         SelectFundraiserCategoryScreen(
                             viewModel = viewModel(),
@@ -443,6 +506,90 @@ private fun MainContent(modifier: Modifier = Modifier) {
                         TransactionScreen(
                             onBackClick = { currentScreen.value = "home" }
                         )
+                    }
+
+                    "nominee_details" -> {
+                        when (currentSubScreen.value) {
+                            "otp_verification" -> {
+                                NomineeOTPVerificationScreen(
+                                    screenType = "nominee",
+                                    onAddNomineeClick = {
+                                        // Reset to form
+                                        currentSubScreen.value = ""
+                                    },
+                                    onSendOTPClick = {
+                                        // Handle send OTP
+                                    },
+                                    onVerifyOTPClick = {
+                                        // Handle verify OTP - completion
+                                        currentScreen.value = "home"
+                                        currentSubScreen.value = ""
+                                    },
+                                    onGoBackClick = {
+                                        currentSubScreen.value = ""
+                                    }
+                                )
+                            }
+                            else -> {
+                                NomineeDetailsScreen(
+                                    onSubmitClick = {
+                                        // Navigate to OTP Verification
+                                        currentSubScreen.value = "otp_verification"
+                                        currentOTPType.value = "nominee"
+                                    },
+                                    onGoBackClick = {
+                                        currentScreen.value = "add_nominee_cards"
+                                    },
+                                    onUploadClick = { onFilesSelected ->
+                                        // Simulate file selection for front and back side of ID
+                                        // In production, you would use ActivityResultContracts to launch file picker
+                                        onFilesSelected("Aadhaar_Front.pdf", "Aadhaar_Back.pdf")
+                                    }
+                                )
+                            }
+                        }
+                    }
+
+                    "family_member_details" -> {
+                        when (currentSubScreen.value) {
+                            "otp_verification" -> {
+                                NomineeOTPVerificationScreen(
+                                    screenType = "family_member",
+                                    onAddNomineeClick = {
+                                        // Reset to form
+                                        currentSubScreen.value = ""
+                                    },
+                                    onSendOTPClick = {
+                                        // Handle send OTP
+                                    },
+                                    onVerifyOTPClick = {
+                                        // Handle verify OTP - completion
+                                        currentScreen.value = "add_nominee_cards"
+                                        currentSubScreen.value = ""
+                                    },
+                                    onGoBackClick = {
+                                        currentSubScreen.value = ""
+                                    }
+                                )
+                            }
+                            else -> {
+                                FamilyMemberDetailsScreen(
+                                    onSubmitClick = {
+                                        // Navigate to OTP Verification
+                                        currentSubScreen.value = "otp_verification"
+                                        currentOTPType.value = "family_member"
+                                    },
+                                    onGoBackClick = {
+                                        currentScreen.value = "add_nominee_cards"
+                                    },
+                                    onUploadClick = { onFilesSelected ->
+                                        // Simulate file selection for front and back side of ID
+                                        // In production, you would use ActivityResultContracts to launch file picker
+                                        onFilesSelected("ID_Front.pdf", "ID_Back.pdf")
+                                    }
+                                )
+                            }
+                        }
                     }
 
                     else -> {
