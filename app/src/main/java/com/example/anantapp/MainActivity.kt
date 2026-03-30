@@ -12,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.anantapp.presentation.screen.BalanceScreen
@@ -49,6 +50,11 @@ import com.example.anantapp.ui.screens.NomineeDetailsScreen
 import com.example.anantapp.ui.screens.NomineeOTPVerificationScreen
 import com.example.anantapp.ui.screens.FamilyMemberDetailsScreen
 import com.example.anantapp.ui.verify.PhotoUploadScreen
+import com.example.anantapp.presentation.screen.ShareRealTimeLocationScreen
+import com.example.anantapp.presentation.screen.ManageFamilyMembersScreen
+import com.example.anantapp.presentation.screen.LocationSharedSuccessScreen
+import com.example.anantapp.presentation.screen.ThankyouScreen
+import com.example.anantapp.presentation.screen.LiveLocationMapScreen
 import com.example.anantapp.ui.verify.VerifyAddressScreen
 import com.example.anantapp.ui.verify.VerifyBankScreen
 import com.example.anantapp.ui.verify.VerifyScreen
@@ -56,6 +62,7 @@ import android.content.Intent
 import androidx.activity.result.contract.ActivityResultContracts
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.compose.BackHandler
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -74,6 +81,7 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 private fun MainContent(modifier: Modifier = Modifier) {
+    val context = LocalContext.current
     val orderSuccessComplete = remember { mutableStateOf(true) }
     val orderStatusComplete = remember { mutableStateOf(true) }
     val viewQRCodeComplete = remember { mutableStateOf(true) }
@@ -92,15 +100,124 @@ private fun MainContent(modifier: Modifier = Modifier) {
     val insuranceDetailsComplete = remember { mutableStateOf(true) }
     val verifyIncomeComplete = remember { mutableStateOf(true) }
     val governmentFundraisersComplete = remember { mutableStateOf(true) }
-    val currentScreen = remember { mutableStateOf("add_nominee_cards") } // Start with Add Nominee Cards screen
+    val currentScreen = remember { mutableStateOf("share_location") } // Start with Share Real Time Location screen
+    val locationShareSuccess = remember { mutableStateOf(false) } // Track if location was shared
+    val viewMapOpen = remember { mutableStateOf(false) } // Track if viewing map
     val currentSubScreen = remember { mutableStateOf("") } // For sub-screens within nominee flow
     val currentOTPType = remember { mutableStateOf("nominee") } // Track OTP screen type: "nominee" or "family_member"
+
+    // Handle system back button navigation
+    BackHandler(enabled = true) {
+        when (currentScreen.value) {
+            "home" -> {
+                // App will close when user presses back from home
+                @Suppress("DEPRECATION")
+                (context as? ComponentActivity)?.finish()
+            }
+            "donor" -> currentScreen.value = "home"
+            "donation_history" -> currentScreen.value = "home"
+            "payment" -> currentScreen.value = "donor"
+            "profile_settings" -> currentScreen.value = "home"
+            "transaction" -> currentScreen.value = "home"
+            "share_location" -> {
+                if (locationShareSuccess.value && viewMapOpen.value) {
+                    viewMapOpen.value = false
+                } else if (locationShareSuccess.value) {
+                    currentScreen.value = "add_nominee_cards"
+                    locationShareSuccess.value = false
+                } else {
+                    currentScreen.value = "add_nominee_cards"
+                }
+            }
+            "add_nominee_cards" -> currentScreen.value = "share_location"
+            "nominee_details" -> currentScreen.value = "add_nominee_cards"
+            "family_member_details" -> currentScreen.value = "add_nominee_cards"
+            "manage_family_members" -> currentScreen.value = "share_location"
+            else -> {
+                // Default behavior
+                @Suppress("DEPRECATION")
+                (context as? ComponentActivity)?.finish()
+            }
+        }
+    }
 
     // Wrap the routing logic in a Box that uses the passed modifier.
     // This ensures every screen respects the safe-area padding from the Scaffold.
     Box(modifier = modifier) {
         when {
-            // Show Add Nominee Cards first if currentScreen is add_nominee_cards
+            // Show Share Real Time Location first if currentScreen is share_location
+            currentScreen.value == "share_location" && locationShareSuccess.value && viewMapOpen.value -> {
+                LiveLocationMapScreen(
+                    onBackClick = {
+                        viewMapOpen.value = false
+                        locationShareSuccess.value = true
+                    },
+                    onNavigateClick = {
+                        // Handle navigate to location
+                    },
+                    onShowMyLocationClick = {
+                        // Handle show my location
+                    },
+                    onShowAllMembersClick = {
+                        // Handle show all members
+                    }
+                )
+            }
+
+            currentScreen.value == "share_location" && locationShareSuccess.value && !viewMapOpen.value -> {
+                LocationSharedSuccessScreen(
+                    onBackClick = {
+                        currentScreen.value = "add_nominee_cards"
+                        locationShareSuccess.value = false
+                    },
+                    onManageAccessClick = {
+                        // Handle manage access
+                    },
+                    onViewOnMapClick = {
+                        viewMapOpen.value = true
+                    },
+                    onDoneClick = {
+                        currentScreen.value = "home"
+                        locationShareSuccess.value = false
+                    }
+                )
+            }
+
+            currentScreen.value == "share_location" && (
+                orderSuccessComplete.value &&
+                orderStatusComplete.value &&
+                viewQRCodeComplete.value &&
+                generateQRInfoComplete.value &&
+                generateQRCodeComplete.value &&
+                userDetailsComplete.value &&
+                deliveryAddressComplete.value &&
+                onboardingComplete.value &&
+                loginComplete.value &&
+                documentVerified.value &&
+                bankVerified.value &&
+                addressVerified.value &&
+                photoUploaded.value &&
+                locationVerified.value &&
+                familyDetailsComplete.value &&
+                insuranceDetailsComplete.value &&
+                verifyIncomeComplete.value &&
+                governmentFundraisersComplete.value
+            ) && !locationShareSuccess.value -> {
+                ShareRealTimeLocationScreen(
+                    onBackClick = {
+                        currentScreen.value = "add_nominee_cards"
+                    },
+                    onManageFamilyClick = {
+                        // Navigate to manage family members
+                        currentScreen.value = "manage_family_members"
+                    },
+                    onShareLocationSuccess = {
+                        // Navigate to success screen
+                        locationShareSuccess.value = true
+                    }
+                )
+            }
+
             currentScreen.value == "add_nominee_cards" && (
                 orderSuccessComplete.value &&
                 orderStatusComplete.value &&
@@ -131,8 +248,8 @@ private fun MainContent(modifier: Modifier = Modifier) {
                         currentScreen.value = "family_member_details"
                     },
                     onShareLocationClick = {
-                        // Handle share location
-                        currentScreen.value = "home"
+                        // Navigate to Share Location
+                        currentScreen.value = "share_location"
                     },
                     onSkipClick = {
                         // Handle skip
@@ -505,6 +622,22 @@ private fun MainContent(modifier: Modifier = Modifier) {
                     "transaction" -> {
                         TransactionScreen(
                             onBackClick = { currentScreen.value = "home" }
+                        )
+                    }
+
+                    "manage_family_members" -> {
+                        ManageFamilyMembersScreen(
+                            onBackClick = { currentScreen.value = "share_location" },
+                            onAddMemberClick = {
+                                // Navigate to add family member form
+                                // For now, just return to share location
+                                currentScreen.value = "share_location"
+                            },
+                            onEditMemberClick = { memberId, memberName ->
+                                // Navigate to edit family member form
+                                // For now, just return to share location
+                                currentScreen.value = "share_location"
+                            }
                         )
                     }
 

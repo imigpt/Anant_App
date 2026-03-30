@@ -68,7 +68,7 @@ fun CreateFundraiserScreen(
     var currentStep by remember { mutableIntStateOf(1) }
 
     val mainGradient = Brush.linearGradient(
-        colors = listOf(Color(0xFF8B00FF), Color(0xFFFF3366)),
+        colors = listOf(Color(0xFF9500FF), Color(0xFFFF2F4B)),
         start = Offset(0f, 0f),
         end = Offset(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY)
     )
@@ -670,12 +670,12 @@ fun LargeUploadBox(
             .height(160.dp)
             .border(
                 width = 1.dp,
-                color = if (isUploaded) Color(0xFF8B00FF) else Color(0xFFE0E0E0),
+                color = if (isUploaded) Color(0xFF9500FF) else Color(0xFFE0E0E0),
                 shape = RoundedCornerShape(12.dp)
             )
             .clip(RoundedCornerShape(12.dp))
             .background(
-                color = if (isUploaded) Color(0xFF8B00FF).copy(alpha = 0.05f) else Color.White
+                color = if (isUploaded) Color(0xFF9500FF).copy(alpha = 0.05f) else Color.White
             )
             .clickable { onClick() }
             .padding(16.dp),
@@ -687,7 +687,7 @@ fun LargeUploadBox(
             Text(
                 text = helperText,
                 fontSize = 12.sp,
-                color = if (isUploaded) Color(0xFF8B00FF) else Color.Gray,
+                color = if (isUploaded) Color(0xFF9500FF) else Color.Gray,
                 textAlign = TextAlign.Center,
                 fontWeight = if (isUploaded) FontWeight.SemiBold else FontWeight.Normal
             )
@@ -793,7 +793,7 @@ fun BottomActionButtons(
             contentAlignment = Alignment.Center
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Default.Bookmark, contentDescription = "Draft", tint = Color(0xFF8B00FF), modifier = Modifier.size(18.dp))
+                Icon(Icons.Default.Bookmark, contentDescription = "Draft", tint = Color(0xFF9500FF), modifier = Modifier.size(18.dp))
                 Spacer(modifier = Modifier.width(8.dp))
                 Text("Draft", fontWeight = FontWeight.Bold, color = Color(0xFF333333), fontSize = 16.sp)
             }

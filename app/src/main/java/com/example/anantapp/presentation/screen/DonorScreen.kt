@@ -25,6 +25,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -49,8 +50,8 @@ fun DonorScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
-    val gradientBlue = Color(0xFF8D14FF)
-    val gradientPink = Color(0xFFFF4B6A)
+    val gradientBlue = Color(0xFF9500FF)
+    val gradientPink = Color(0xFFFF6264)
     val gradientBrush = Brush.linearGradient(
         colors = listOf(gradientBlue, gradientPink),
         start = Offset(0f, 0f),
@@ -201,7 +202,11 @@ fun DonorScreen(
 
                 CustomTextField(
                     value = uiState.mobileNumber,
-                    onValueChange = { viewModel.updateMobileNumber(it) },
+                    onValueChange = { input ->
+                        // Only allow digits and limit to 10 digits for Indian mobile number
+                        val filtered = input.filter { it.isDigit() }.take(10)
+                        viewModel.updateMobileNumber(filtered)
+                    },
                     placeholder = "Mobile Number",
                     keyboardType = KeyboardType.Phone,
                     borderColor = lightBorderColor
@@ -211,8 +216,14 @@ fun DonorScreen(
 
                 CustomTextField(
                     value = uiState.panNumber,
-                    onValueChange = { viewModel.updatePanNumber(it) },
-                    placeholder = "PAN Number (for 80G tax certificate)",
+                    onValueChange = { input ->
+                        // PAN format: 10 characters (letters and digits, uppercase)
+                        val filtered = input.filter { it.isLetterOrDigit() }
+                            .take(10)
+                            .uppercase()
+                        viewModel.updatePanNumber(filtered)
+                    },
+                    placeholder = "PAN Number",
                     borderColor = lightBorderColor
                 )
 
@@ -259,7 +270,11 @@ fun DonorScreen(
                     )
                     CustomTextField(
                         value = uiState.pincode,
-                        onValueChange = { viewModel.updatePincode(it) },
+                        onValueChange = { input ->
+                            // Indian pincode: 6 digits only
+                            val filtered = input.filter { it.isDigit() }.take(6)
+                            viewModel.updatePincode(filtered)
+                        },
                         placeholder = "Pin code",
                         modifier = Modifier.weight(1f),
                         keyboardType = KeyboardType.Number,
@@ -345,8 +360,12 @@ fun DonorScreen(
 
                 CustomTextField(
                     value = uiState.donationAmount,
-                    onValueChange = { viewModel.updateDonationAmount(it) },
-                    placeholder = "₹ Amount",
+                    onValueChange = { input ->
+                        // Only allow digits for donation amount
+                        val filtered = input.filter { it.isDigit() }
+                        viewModel.updateDonationAmount(filtered)
+                    },
+                    placeholder = "₹ Amount (digits only)",
                     keyboardType = KeyboardType.Number,
                     borderColor = lightBorderColor
                 )
@@ -430,7 +449,7 @@ fun DonorScreen(
                         .height(56.dp)
                         .background(
                             brush = gradientBrush,
-                            shape = RoundedCornerShape(16.dp)
+                            shape = RoundedCornerShape(18.dp)
                         ),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color.Transparent
@@ -467,11 +486,23 @@ private fun DonorTypeButton(
             modifier
                 .fillMaxWidth()
                 .height(52.dp)
+                .shadow(
+                    elevation = 4.dp,
+                    shape = RoundedCornerShape(26.dp),
+                    ambientColor = Color.Black.copy(alpha = 0.25f),
+                    spotColor = Color.Black.copy(alpha = 0.25f)
+                )
                 .background(brush = gradientBrush, shape = RoundedCornerShape(26.dp))
         } else {
             modifier
                 .fillMaxWidth()
                 .height(52.dp)
+                .shadow(
+                    elevation = 4.dp,
+                    shape = RoundedCornerShape(26.dp),
+                    ambientColor = Color.Black.copy(alpha = 0.25f),
+                    spotColor = Color.Black.copy(alpha = 0.25f)
+                )
         },
         colors = ButtonDefaults.buttonColors(
             containerColor = if (isSelected) Color.Transparent else Color.White
@@ -510,10 +541,10 @@ private fun CustomTextField(
         modifier = modifier
             .fillMaxWidth()
             .height(54.dp),
-        shape = RoundedCornerShape(12.dp),
+        shape = RoundedCornerShape(10.dp),
         colors = OutlinedTextFieldDefaults.colors(
             unfocusedBorderColor = borderColor,
-            focusedBorderColor = Color(0xFF8D14FF),
+            focusedBorderColor = Color(0xFF9500FF),
             unfocusedTextColor = Color(0xFF333333),
             focusedTextColor = Color(0xFF333333)
         ),

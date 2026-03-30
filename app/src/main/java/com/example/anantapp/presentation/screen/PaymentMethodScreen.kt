@@ -73,8 +73,8 @@ fun PaymentMethodScreen(
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
 
-    val gradientBlue = Color(0xFF8D14FF)
-    val gradientPink = Color(0xFFFF4B6A)
+    val gradientBlue = Color(0xFF9500FF)
+    val gradientPink = Color(0xFFFF6264)
     val gradientBrush = Brush.linearGradient(
         colors = listOf(gradientBlue, gradientPink),
         start = Offset(0f, 0f),
@@ -259,7 +259,7 @@ fun PaymentMethodScreen(
                     val fieldModifier = Modifier
                         .fillMaxWidth()
                         .height(54.dp)
-                    val fieldShape = RoundedCornerShape(12.dp)
+                    val fieldShape = RoundedCornerShape(10.dp)
                     val fieldColors = OutlinedTextFieldDefaults.colors(
                         unfocusedBorderColor = lightBorderColor,
                         focusedBorderColor = gradientBlue,
@@ -353,9 +353,9 @@ fun PaymentMethodScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(160.dp)
-                            .clip(RoundedCornerShape(12.dp))
+                            .clip(RoundedCornerShape(10.dp))
                             .background(Color.White)
-                            .border(1.dp, lightBorderColor, RoundedCornerShape(12.dp))
+                            .border(1.dp, lightBorderColor, RoundedCornerShape(10.dp))
                             .clickable { /* Handle file upload */ },
                         contentAlignment = Alignment.Center
                     ) {
@@ -457,7 +457,7 @@ fun PaymentMethodScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(56.dp),
-                        shape = RoundedCornerShape(16.dp),
+                        shape = RoundedCornerShape(18.dp),
                         border = BorderStroke(1.dp, gradientBrush)
                     ) {
                         Text(
@@ -481,7 +481,7 @@ fun PaymentMethodScreen(
                             .height(56.dp)
                             .background(
                                 brush = gradientBrush,
-                                shape = RoundedCornerShape(16.dp)
+                                shape = RoundedCornerShape(18.dp)
                             ),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = Color.Transparent
@@ -512,7 +512,7 @@ fun PaymentMethodScreen(
                         onValueChange = { viewModel.updateCardHolderName(it) },
                         placeholder = { Text("Card Holder Name", fontSize = 15.sp, color = placeholderColor) },
                         modifier = Modifier.fillMaxWidth().height(54.dp),
-                        shape = RoundedCornerShape(12.dp),
+                        shape = RoundedCornerShape(10.dp),
                         colors = OutlinedTextFieldDefaults.colors(
                             unfocusedBorderColor = lightBorderColor,
                             focusedBorderColor = gradientBlue,
@@ -530,7 +530,7 @@ fun PaymentMethodScreen(
                         onValueChange = { viewModel.updateCardNumber(it) },
                         placeholder = { Text("Card Number", fontSize = 15.sp, color = placeholderColor) },
                         modifier = Modifier.fillMaxWidth().height(54.dp),
-                        shape = RoundedCornerShape(12.dp),
+                        shape = RoundedCornerShape(10.dp),
                         colors = OutlinedTextFieldDefaults.colors(
                             unfocusedBorderColor = lightBorderColor,
                             focusedBorderColor = gradientBlue,
@@ -566,7 +566,7 @@ fun PaymentMethodScreen(
                                 .weight(1f)
                                 .height(54.dp)
                                 .clickable { showExpiryPicker = true },
-                            shape = RoundedCornerShape(12.dp),
+                            shape = RoundedCornerShape(10.dp),
                             colors = OutlinedTextFieldDefaults.colors(
                                 unfocusedBorderColor = lightBorderColor,
                                 focusedBorderColor = gradientBlue,
@@ -583,7 +583,7 @@ fun PaymentMethodScreen(
                             onValueChange = { viewModel.updateCardCVV(it) },
                             placeholder = { Text("CVV", fontSize = 15.sp, color = placeholderColor) },
                             modifier = Modifier.weight(1f).height(54.dp),
-                            shape = RoundedCornerShape(12.dp),
+                            shape = RoundedCornerShape(10.dp),
                             colors = OutlinedTextFieldDefaults.colors(
                                 unfocusedBorderColor = lightBorderColor,
                                 focusedBorderColor = gradientBlue,
@@ -609,7 +609,7 @@ fun PaymentMethodScreen(
                             .height(56.dp)
                             .background(
                                 brush = gradientBrush,
-                                shape = RoundedCornerShape(16.dp)
+                                shape = RoundedCornerShape(18.dp)
                             ),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = Color.Transparent
@@ -677,12 +677,12 @@ private fun MonthYearPickerDialog(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .clickable { selectedMonth = month }
-                                    .background(if (isSelected) Color(0xFF8D14FF).copy(alpha = 0.1f) else Color.Transparent)
+                                    .background(if (isSelected) Color(0xFF9500FF).copy(alpha = 0.1f) else Color.Transparent)
                                     .padding(vertical = 12.dp),
                                 textAlign = TextAlign.Center,
                                 fontSize = 16.sp,
                                 fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                                color = if (isSelected) Color(0xFF8D14FF) else Color.Black
+                                color = if (isSelected) Color(0xFF9500FF) else Color.Black
                             )
                         }
                     }
@@ -696,12 +696,12 @@ private fun MonthYearPickerDialog(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .clickable { selectedYear = year }
-                                    .background(if (isSelected) Color(0xFF8D14FF).copy(alpha = 0.1f) else Color.Transparent)
+                                    .background(if (isSelected) Color(0xFF9500FF).copy(alpha = 0.1f) else Color.Transparent)
                                     .padding(vertical = 12.dp),
                                 textAlign = TextAlign.Center,
                                 fontSize = 16.sp,
                                 fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                                color = if (isSelected) Color(0xFF8D14FF) else Color.Black
+                                color = if (isSelected) Color(0xFF9500FF) else Color.Black
                             )
                         }
                     }
@@ -719,7 +719,7 @@ private fun MonthYearPickerDialog(
                     TextButton(
                         onClick = { onConfirm(selectedMonth, selectedYear) }
                     ) {
-                        Text("OK", color = Color(0xFF8D14FF), fontWeight = FontWeight.Bold)
+                        Text("OK", color = Color(0xFF9500FF), fontWeight = FontWeight.Bold)
                     }
                 }
             }
@@ -741,12 +741,12 @@ private fun PaymentMethodOption(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
+            .clip(RoundedCornerShape(10.dp))
             .background(Color.White)
             .border(
                 width = 1.dp,
-                color = if (isSelected) Color(0xFF8D14FF) else Color(0xFFE5E5E5),
-                shape = RoundedCornerShape(12.dp)
+                color = if (isSelected) Color(0xFF9500FF) else Color(0xFFE5E5E5),
+                shape = RoundedCornerShape(10.dp)
             )
             .clickable(onClick = onClick)
             .padding(horizontal = 16.dp, vertical = 14.dp)

@@ -37,6 +37,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 // Exact Color definitions for Background
 private val OrangeGradientStart = Color(0xFFFF6300)
 private val OrangeGradientEnd = Color(0xFFFFCF11)
+private val PurpleAccent = Color(0xFF9500FF)
+private val RedAccent = Color(0xFFFF6264)
 private val MainBackground = Color(0xFFFAFAFA)
 
 // Gradients matching the UI image for fields and buttons

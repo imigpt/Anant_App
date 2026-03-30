@@ -56,8 +56,8 @@ fun SelectFundraiserCategoryScreen(
     // Vibrant diagonal gradient (Deep Purple to Bright Pink/Coral)
     val mainGradient = Brush.linearGradient(
         colors = listOf(
-            Color(0xFF8B00FF), // Deep Purple
-            Color(0xFFFF3366)  // Bright Pinkish-Red
+            Color(0xFF9500FF), // Deep Purple
+            Color(0xFFFF2F4B)  // Bright Pinkish-Red
         ),
         start = Offset(0f, 0f),
         end = Offset(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY)

@@ -240,6 +240,12 @@ fun SupportCard(
     Box(
         modifier = Modifier
             .fillMaxWidth()
+            .shadow(
+                elevation = 8.dp,
+                shape = RoundedCornerShape(16.dp),
+                ambientColor = Color.Black.copy(alpha = 0.1f),
+                spotColor = Color.Black.copy(alpha = 0.2f)
+            )
             .clip(RoundedCornerShape(16.dp))
             .background(Color.White.copy(alpha = 0.5f))
             .border(

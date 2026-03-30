@@ -38,8 +38,8 @@ fun TransactionScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
-    val gradientBlue = Color(0xFF8D14FF)
-    val gradientPink = Color(0xFFFF1E4F)
+    val gradientBlue = Color(0xFF9500FF)
+    val gradientPink = Color(0xFFFF6264)
     val gradientBrush = Brush.linearGradient(
         colors = listOf(gradientBlue, gradientPink),
         start = Offset(0f, 0f),
@@ -122,7 +122,7 @@ fun TransactionScreen(
                         shape = RoundedCornerShape(24.dp),
                         colors = OutlinedTextFieldDefaults.colors(
                             unfocusedBorderColor = Color(0xFFE0E0E0),
-                            focusedBorderColor = Color(0xFF8D14FF),
+                            focusedBorderColor = Color(0xFF9500FF),
                             unfocusedTextColor = Color.Black,
                             focusedTextColor = Color.Black,
                             unfocusedContainerColor = Color(0xFFF5F6F8),

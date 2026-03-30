@@ -128,7 +128,7 @@ fun AddBalanceScreen(
                         .fillMaxWidth()
                         .height(64.dp)
                         .background(color = inputBgColor, shape = RoundedCornerShape(12.dp))
-                        .border(1.dp, borderColor, RoundedCornerShape(12.dp))
+                        .border(1.dp, borderColor, RoundedCornerShape(8.dp))
                         .padding(horizontal = 16.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {

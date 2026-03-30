@@ -16,6 +16,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -38,8 +39,8 @@ fun DonationHistoryScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
-    val gradientBlue = Color(0xFF8D14FF)
-    val gradientPink = Color(0xFFFF1E4F)
+    val gradientBlue = Color(0xFF9500FF)
+    val gradientPink = Color(0xFFFF6264)
     val gradientBrush = Brush.linearGradient(
         colors = listOf(gradientBlue, gradientPink),
         start = Offset(0f, 0f),
@@ -119,10 +120,10 @@ fun DonationHistoryScreen(
                         modifier = Modifier
                             .weight(1f)
                             .height(52.dp),
-                        shape = RoundedCornerShape(24.dp),
+                        shape = RoundedCornerShape(12.dp),
                         colors = OutlinedTextFieldDefaults.colors(
                             unfocusedBorderColor = Color(0xFFE0E0E0),
-                            focusedBorderColor = Color(0xFF8D14FF),
+                            focusedBorderColor = Color(0xFF9500FF),
                             unfocusedTextColor = Color.Black,
                             focusedTextColor = Color.Black,
                             unfocusedContainerColor = Color(0xFFF5F6F8),
@@ -140,22 +141,15 @@ fun DonationHistoryScreen(
                     )
 
                     // Filter Button with Gradient background like DonorScreen buttons
-                    Box(
-                        modifier = Modifier
-                            .size(52.dp)
-                            .clip(RoundedCornerShape(16.dp))
-                            .background(brush = gradientBrush),
-                        contentAlignment = Alignment.Center
-                    ) {
+
                         IconButton(onClick = { /* Handle filter */ }) {
                             Icon(
                                 imageVector = Icons.Filled.Tune,
                                 contentDescription = "Filter",
-                                tint = Color.White,
+                                tint = Color.Black,
                                 modifier = Modifier.size(24.dp)
                             )
                         }
-                    }
                 }
 
                 // "This month" label
@@ -189,9 +183,16 @@ private fun DonationHistoryCard(
     modifier: Modifier = Modifier
 ) {
     Card(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .shadow(
+                elevation = 4.dp,
+                shape = RoundedCornerShape(16.dp),
+                ambientColor = Color.Black.copy(alpha = 0.25f),
+                spotColor = Color.Black.copy(alpha = 0.25f)
+            ),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFF8F8F8)),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFFFFFFFF)),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(
@@ -318,7 +319,7 @@ private fun DonationHistoryCard(
                     .height(44.dp),
                 contentPadding = PaddingValues(0.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
-                shape = RoundedCornerShape(12.dp)
+                shape = RoundedCornerShape(18.dp)
             ) {
                 Box(
                     modifier = Modifier

@@ -1,36 +1,38 @@
 package com.example.anantapp.presentation.screen
 
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.GenericShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.anantapp.ui.components.CurvedBottomShape
 
 /**
  * Family Information Screen
@@ -52,339 +54,283 @@ fun FamilyInformationScreen(
     val maritalStatus = remember { mutableStateOf("Married") }
     val familyInsuranceStatus = remember { mutableStateOf("Active") }
 
-    Box(
-        modifier = Modifier.fillMaxSize()
+    val density = LocalDensity.current
+    val curveDepth = remember(density) { with(density) { 48.dp.toPx() } }
+
+    // Custom shape for the soft curved bottom of the header
+    val curvedShape = remember(curveDepth) {
+        GenericShape { size, _ ->
+            moveTo(0f, 0f)
+            lineTo(size.width, 0f)
+            lineTo(size.width, size.height - curveDepth)
+            quadraticBezierTo(
+                size.width / 2f, size.height + curveDepth,
+                0f, size.height - curveDepth
+            )
+            close()
+        }
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.White)
+            .verticalScroll(rememberScrollState())
     ) {
-        // ==================== Main Content ====================
-        Column(
+        // ==================== Orange Curved Header ====================
+        Box(
             modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-        ) {
-            // ==================== Orange Gradient Header ====================
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(280.dp)
-                    .background(
-                        brush = Brush.linearGradient(
-                            colors = listOf(
-                                Color(0xFFFF9500),
-                                Color(0xFFFF7D00)
-                            ),
-                            start = Offset(0f, 0f),
-                            end = Offset(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY)
+                .fillMaxWidth()
+                .height(240.dp)
+                .clip(curvedShape)
+                .background(
+                    brush = Brush.linearGradient(
+                        colors = listOf(
+                            Color(0xFFFF6300), // Vibrant Orange
+                            Color(0xFFFFCF11)  // Yellow-Orange
                         )
                     )
-                    .clip(CurvedBottomShape { 48.dp.toPx() })
+                )
+        ) {
+            // Decorative overlapping circle on the top left
+            Canvas(
+                modifier = Modifier
+                    .size(160.dp)
+                    .offset(x = (-40).dp, y = (-20).dp)
             ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(16.dp)
+                drawCircle(color = Color(0xFFFF8C00).copy(alpha = 0.4f)) // Slightly darker orange for contrast
+            }
+
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 20.dp, vertical = 24.dp)
+            ) {
+                // ========== Top Bar ==========
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // ========== Status Bar ==========
-                    Row(
+                    // Back Button
+                    Box(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 8.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                            .size(40.dp)
+                            .clickable { onBackClick() },
+                        contentAlignment = Alignment.CenterStart
                     ) {
-                        // Back Button
-                        Box(
-                            modifier = Modifier
-                                .size(40.dp)
-                                .background(Color(0xFFFF9500), CircleShape)
-                                .clickable { onBackClick() },
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = "Back",
-                                tint = Color.White,
-                                modifier = Modifier.size(20.dp)
-                            )
-                        }
-
-                        // Title
-                        Text(
-                            text = "Profile Settings",
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White,
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.weight(1f)
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Back",
+                            tint = Color.White,
+                            modifier = Modifier.size(26.dp)
                         )
-
-                        // Notification Bell
-                        Box(
-                            modifier = Modifier.size(40.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Notifications,
-                                contentDescription = "Notifications",
-                                tint = Color.White,
-                                modifier = Modifier.size(24.dp)
-                            )
-                        }
                     }
 
-                    Spacer(modifier = Modifier.height(20.dp))
+                    Text(
+                        text = "Profile Settings",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
 
-                    // ========== User Info Row ==========
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .weight(1f),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    Icon(
+                        imageVector = Icons.Outlined.Notifications,
+                        contentDescription = "Notifications",
+                        tint = Color.White,
+                        modifier = Modifier.size(26.dp)
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(32.dp))
+
+                // ========== User Info Row ==========
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    // Left Side: Name and ID
+                    Column(
+                        modifier = Modifier.weight(1f)
                     ) {
-                        // User Details
-                        Column(
-                            modifier = Modifier.weight(1f)
-                        ) {
+                        Row(verticalAlignment = Alignment.Bottom) {
                             Text(
-                                text = "Hello $userName,",
-                                fontSize = 24.sp,
+                                text = "Hello ",
+                                fontSize = 26.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color.White,
-                                lineHeight = 30.sp
+                                color = Color(0xFF9C27B0) // Purple
                             )
-
-                            Spacer(modifier = Modifier.height(4.dp))
-
                             Text(
-                                text = "Anant Id: $anantId",
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Normal,
-                                color = Color.White.copy(alpha = 0.9f)
-                            )
-
-                            Spacer(modifier = Modifier.height(16.dp))
-
-                            Text(
-                                text = "badge icon or image here",
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.Normal,
-                                color = Color.White.copy(alpha = 0.7f)
+                                text = "$userName,",
+                                fontSize = 26.sp,
+                                fontWeight = FontWeight.ExtraBold,
+                                color = Color(0xFFE91E63) // Pink
                             )
                         }
 
-                        // Profile Picture Circle
+                        Spacer(modifier = Modifier.height(4.dp))
+
+                        Text(
+                            text = "Anant Id: $anantId",
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = Color.White.copy(alpha = 0.9f)
+                        )
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        Text(
+                            text = "badge icon or image here",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Normal,
+                            color = Color.White.copy(alpha = 0.8f)
+                        )
+                    }
+
+                    // Right Side: Profile Picture
+                    Box(
+                        modifier = Modifier
+                            .size(86.dp)
+                            .background(
+                                brush = Brush.linearGradient(
+                                    colors = listOf(Color(0xFF9500FF), Color(0xFFFF6264))
+                                ),
+                                shape = CircleShape
+                            )
+                            .padding(3.dp)
+                            .background(Color.White, CircleShape),
+                        contentAlignment = Alignment.Center
+                    ) {
                         Box(
                             modifier = Modifier
                                 .size(80.dp)
-                                .background(
-                                    brush = Brush.linearGradient(
-                                        colors = listOf(
-                                            Color(0xFF9C27B0),
-                                            Color(0xFFE91E63)
-                                        )
-                                    ),
-                                    shape = CircleShape
-                                )
-                                .padding(2.dp)
-                                .background(Color.White, shape = CircleShape),
+                                .background(Color(0xFFF5F5F5), CircleShape)
+                                .clip(CircleShape),
                             contentAlignment = Alignment.Center
                         ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(76.dp)
-                                    .background(Color(0xFFF5F5F5), shape = CircleShape),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Outlined.Person,
-                                    contentDescription = "Profile Picture",
-                                    tint = Color(0xFFCCCCCC),
-                                    modifier = Modifier.size(48.dp)
-                                )
-                            }
+                            Icon(
+                                imageVector = Icons.Outlined.Person,
+                                contentDescription = "Profile Picture",
+                                tint = Color(0xFFCCCCCC),
+                                modifier = Modifier.size(48.dp)
+                            )
                         }
                     }
                 }
             }
-
-            // ==================== Form Section ====================
-            // Magenta-to-Pink Gradient Header
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(
-                        brush = Brush.linearGradient(
-                            colors = listOf(
-                                Color(0xFF9C27B0),
-                                Color(0xFFE91E63)
-                            ),
-                            start = Offset(0f, 0f),
-                            end = Offset(Float.POSITIVE_INFINITY, 0f)
-                        )
-                    )
-                    .padding(16.dp)
-            ) {
-                Text(
-                    text = "Update Family Information",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // ==================== Form Fields ====================
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                // Family Head Name
-                FormField(
-                    label = "Family Head Name",
-                    value = familyHeadName.value,
-                    onValueChange = { familyHeadName.value = it }
-                )
-
-                // Spouse Name
-                FormField(
-                    label = "Spouse Name",
-                    value = spouseName.value,
-                    onValueChange = { spouseName.value = it }
-                )
-
-                // Spouse Age
-                FormField(
-                    label = "Spouse Age",
-                    value = spouseAge.value,
-                    onValueChange = { spouseAge.value = it }
-                )
-
-                // Nominee 1
-                FormField(
-                    label = "Nominee 1",
-                    value = nominee1.value,
-                    onValueChange = { nominee1.value = it }
-                )
-
-                // Nominee 2
-                FormField(
-                    label = "Nominee 2",
-                    value = nominee2.value,
-                    onValueChange = { nominee2.value = it }
-                )
-
-                // Marital Status
-                FormField(
-                    label = "Marital Status",
-                    value = maritalStatus.value,
-                    onValueChange = { maritalStatus.value = it }
-                )
-
-                // Family Insurance Status
-                FormField(
-                    label = "Family Insurance Status",
-                    value = familyInsuranceStatus.value,
-                    onValueChange = { familyInsuranceStatus.value = it }
-                )
-            }
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            // ==================== Update Button ====================
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
-                    .height(56.dp)
-                    .background(
-                        brush = Brush.linearGradient(
-                            colors = listOf(
-                                Color(0xFFFF9500),
-                                Color(0xFFFF7D00)
-                            ),
-                            start = Offset(0f, 0f),
-                            end = Offset(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY)
-                        ),
-                        shape = RoundedCornerShape(28.dp)
-                    )
-                    .clickable { onUpdateClick() },
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "Request to Update Profile",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White,
-                    textAlign = TextAlign.Center
-                )
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
         }
+
+        // ==================== Purple/Pink Section Header ====================
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    brush = Brush.linearGradient(
+                        colors = listOf(Color(0xFF9500FF), Color(0xFFFF6264))
+                    )
+                )
+                .padding(vertical = 10.dp, horizontal = 20.dp)
+        ) {
+            Text(
+                text = "Update Family Information",
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.White,
+                textAlign = TextAlign.Start, // Left aligned per the design
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+
+        Spacer(modifier = Modifier.height(20.dp))
+
+        // ==================== Form Fields ====================
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            CustomFormField(label = "Family Head Name", value = familyHeadName.value, onValueChange = { familyHeadName.value = it })
+            CustomFormField(label = "Spouse Name", value = spouseName.value, onValueChange = { spouseName.value = it })
+            CustomFormField(label = "Spouse Age", value = spouseAge.value, onValueChange = { spouseAge.value = it })
+            CustomFormField(label = "Nominee 1", value = nominee1.value, onValueChange = { nominee1.value = it })
+            CustomFormField(label = "Nominee 2", value = nominee2.value, onValueChange = { nominee2.value = it })
+            CustomFormField(label = "Martial Status", value = maritalStatus.value, onValueChange = { maritalStatus.value = it })
+            CustomFormField(label = "Family Insurance Status", value = familyInsuranceStatus.value, onValueChange = { familyInsuranceStatus.value = it })
+        }
+
+        Spacer(modifier = Modifier.height(32.dp))
+
+        // ==================== Update Button ====================
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp)
+                .height(52.dp)
+                .shadow(elevation = 6.dp, shape = RoundedCornerShape(99.dp), spotColor = Color(0xFFE91E63))
+                .background(
+                    brush = Brush.linearGradient(
+                        colors = listOf(Color(0xFF9500FF), Color(0xFFFF1493))
+                    ),
+                    shape = RoundedCornerShape(99.dp)
+                )
+                .clickable { onUpdateClick() },
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "Request to Update Profile",
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.White
+            )
+        }
+
+        Spacer(modifier = Modifier.height(40.dp))
     }
 }
 
 /**
- * Form Field Component
- * Reusable text field with magenta border and label
+ * Custom clean form field to replicate the design exactly
  */
 @Composable
-private fun FormField(
+private fun CustomFormField(
     label: String,
     value: String,
     onValueChange: (String) -> Unit
 ) {
     Column(
         modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        verticalArrangement = Arrangement.spacedBy(6.dp)
     ) {
-        // Label
         Text(
             text = label,
             fontSize = 14.sp,
             fontWeight = FontWeight.Bold,
-            color = Color(0xFF333333)
+            color = Color.Black
         )
 
-        // Input Field
-        TextField(
-            value = value,
-            onValueChange = onValueChange,
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(50.dp)
-                .border(
-                    width = 2.dp,
-                    color = Color(0xFFE91E63),
-                    shape = RoundedCornerShape(8.dp)
-                )
-                .clip(RoundedCornerShape(8.dp)),
-            colors = TextFieldDefaults.colors(
-                focusedContainerColor = Color.White,
-                unfocusedContainerColor = Color.White,
-                focusedIndicatorColor = Color.Transparent,
-                unfocusedIndicatorColor = Color.Transparent,
-                focusedLabelColor = Color(0xFFE91E63),
-                unfocusedLabelColor = Color.Gray,
-                focusedTextColor = Color.Black,
-                unfocusedTextColor = Color.Black
-            ),
-            textStyle = androidx.compose.material3.LocalTextStyle.current.copy(
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Normal,
-                color = Color.Black
-            ),
-            singleLine = true
-        )
+                .height(46.dp)
+                .border(width = 1.dp, color = Color(0xFFFF1493), shape = RoundedCornerShape(8.dp))
+                .background(Color.White, RoundedCornerShape(8.dp))
+                .padding(horizontal = 14.dp),
+            contentAlignment = Alignment.CenterStart
+        ) {
+            BasicTextField(
+                value = value,
+                onValueChange = onValueChange,
+                textStyle = TextStyle(fontSize = 14.sp, color = Color.Black),
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
     }
 }
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, showSystemUi = true)
 @Composable
 private fun PreviewFamilyInformationScreen() {
     FamilyInformationScreen()

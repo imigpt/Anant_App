@@ -81,7 +81,7 @@ fun TargetAndPaymentsScreen(
     var enableCommenting by remember { mutableStateOf(true) }
     
     val mainGradient = Brush.linearGradient(
-        colors = listOf(Color(0xFF8B00FF), Color(0xFFFF3366))
+        colors = listOf(Color(0xFF9500FF), Color(0xFFFF6264))
     )
     
     // Handle result changes
@@ -348,9 +348,7 @@ private fun AutoTopupBox(
             .fillMaxWidth()
             .height(56.dp)
             .background(
-                brush = Brush.linearGradient(
-                    colors = listOf(Color(0xFF1E88E5), Color(0xFF0D47A1))
-                ),
+                color = Color(0xFF0037FF),
                 shape = RoundedCornerShape(12.dp)
             )
             .clickable(

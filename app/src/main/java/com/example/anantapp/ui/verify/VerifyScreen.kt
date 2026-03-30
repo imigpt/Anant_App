@@ -65,7 +65,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 // Exact Color definitions
 private val OrangeGradientStart = Color(0xFFFF6300)
 private val OrangeGradientEnd = Color(0xFFFFCF11)
-private val PurpleAccent = Color(0xFFC026D3)
+private val PurpleAccent = Color(0xFF9500FF)
+private val RedAccent = Color(0xFFFF6264)
 private val PurpleBlobColor = Color(0xFFA142FF)
 private val GreenGradientStart = Color(0xFF6B9B25)
 private val GreenGradientEnd = Color(0xFFB5E453)
@@ -462,7 +463,7 @@ private fun GradientBorderButton(text: String, onClick: () -> Unit, isEnabled: B
         modifier = modifier
             .fillMaxWidth()
             .height(54.dp)
-            .background(brush = Brush.linearGradient(listOf(PurpleAccent, OrangeGradientStart)), shape = RoundedCornerShape(50))
+            .background(brush = Brush.linearGradient(listOf(PurpleAccent, RedAccent)), shape = RoundedCornerShape(50))
             .padding(2.dp)
             .background(if (isEnabled) Color.White else Color(0xFFF0F0F0), RoundedCornerShape(50))
             .clip(RoundedCornerShape(50))
