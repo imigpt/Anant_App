@@ -413,6 +413,65 @@ fun GradientSurface(
 }
 
 /**
+ * QR Form Label Component
+ */
+@Composable
+fun QRFormLabel(text: String, modifier: Modifier = Modifier) {
+    Text(
+        text = text,
+        fontSize = 14.sp,
+        fontWeight = FontWeight.SemiBold,
+        color = Color(0xFF333333),
+        modifier = modifier
+    )
+}
+
+/**
+ * QR Input Field Component
+ */
+@Composable
+fun QRInputField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    placeholder: String,
+    mainGradient: androidx.compose.ui.graphics.Brush,
+    keyboardType: KeyboardType = KeyboardType.Text,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(52.dp)
+            .border(1.5.dp, mainGradient, RoundedCornerShape(12.dp))
+            .background(Color.White, RoundedCornerShape(12.dp))
+            .padding(12.dp)
+    ) {
+        BasicTextField(
+            value = value,
+            onValueChange = onValueChange,
+            textStyle = TextStyle(
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Normal,
+                color = Color.Black
+            ),
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth(),
+            keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
+            decorationBox = { innerTextField ->
+                if (value.isEmpty()) {
+                    Text(
+                        text = placeholder,
+                        color = Color.Gray,
+                        fontSize = 14.sp
+                    )
+                }
+                innerTextField()
+            }
+        )
+    }
+}
+
+/**
  * Custom Shadow Extension for Modifiers
  */
 fun Modifier.customShadow(

@@ -89,9 +89,9 @@ private fun MainContent(modifier: Modifier = Modifier) {
     val generateQRCodeComplete = remember { mutableStateOf(true) }
     val userDetailsComplete = remember { mutableStateOf(true) }
     val deliveryAddressComplete = remember { mutableStateOf(true) }
-    val onboardingComplete = remember { mutableStateOf(true) }
-    val loginComplete = remember { mutableStateOf(true) }
-    val documentVerified = remember { mutableStateOf(true) }
+    val onboardingComplete = remember { mutableStateOf(false) }
+    val loginComplete = remember { mutableStateOf(false) }
+    val documentVerified = remember { mutableStateOf(false) }
     val bankVerified = remember { mutableStateOf(true) }
     val addressVerified = remember { mutableStateOf(true) }
     val photoUploaded = remember { mutableStateOf(true) }
@@ -348,19 +348,20 @@ private fun MainContent(modifier: Modifier = Modifier) {
                 )
             }
 
-            !onboardingComplete.value -> {
-                OnboardingScreen(
-                    onOnboardingComplete = {
-                        onboardingComplete.value = true
-                    }
-                )
-            }
-
             !loginComplete.value -> {
                 LoginScreen(
                     viewModel = viewModel(),
                     onLoginSuccess = {
                         loginComplete.value = true
+                    }
+                )
+            }
+
+            !onboardingComplete.value -> {
+                OnboardingScreen(
+                    onOnboardingComplete = {
+                        onboardingComplete.value = true
+                        documentVerified.value = false
                     }
                 )
             }
@@ -373,6 +374,7 @@ private fun MainContent(modifier: Modifier = Modifier) {
                     },
                     onVerifySuccess = {
                         documentVerified.value = true
+                        bankVerified.value = false
                     }
                 )
             }
@@ -385,6 +387,7 @@ private fun MainContent(modifier: Modifier = Modifier) {
                     },
                     onSuccess = {
                         bankVerified.value = true
+                        addressVerified.value = false
                     }
                 )
             }
@@ -397,6 +400,31 @@ private fun MainContent(modifier: Modifier = Modifier) {
                     },
                     onSuccess = {
                         addressVerified.value = true
+                        familyDetailsComplete.value = false
+                    }
+                )
+            }
+
+            !familyDetailsComplete.value -> {
+                FamilyDetailsScreen(
+                    onSkip = {
+                        addressVerified.value = false
+                    },
+                    onSubmit = {
+                        familyDetailsComplete.value = true
+                        verifyIncomeComplete.value = false
+                    }
+                )
+            }
+
+            !verifyIncomeComplete.value -> {
+                VerifyIncomeScreen(
+                    onSkip = {
+                        familyDetailsComplete.value = false
+                    },
+                    onSubmit = {
+                        verifyIncomeComplete.value = true
+                        photoUploaded.value = false
                     }
                 )
             }
@@ -405,10 +433,11 @@ private fun MainContent(modifier: Modifier = Modifier) {
                 PhotoUploadScreen(
                     viewModel = viewModel(),
                     onSkipClick = {
-                        addressVerified.value = false
+                        verifyIncomeComplete.value = false
                     },
                     onSuccess = {
                         photoUploaded.value = true
+                        locationVerified.value = false
                     }
                 )
             }
@@ -424,21 +453,10 @@ private fun MainContent(modifier: Modifier = Modifier) {
                 )
             }
 
-            !familyDetailsComplete.value -> {
-                FamilyDetailsScreen(
-                    onSkip = {
-                        locationVerified.value = false
-                    },
-                    onSubmit = {
-                        familyDetailsComplete.value = true
-                    }
-                )
-            }
-
             !insuranceDetailsComplete.value -> {
                 DeclareInsuranceDetailsScreen(
                     onSkip = {
-                        familyDetailsComplete.value = false
+                        locationVerified.value = false
                     },
                     onSubmit = {
                         insuranceDetailsComplete.value = true
@@ -446,21 +464,10 @@ private fun MainContent(modifier: Modifier = Modifier) {
                 )
             }
 
-            !verifyIncomeComplete.value -> {
-                VerifyIncomeScreen(
-                    onSkip = {
-                        insuranceDetailsComplete.value = false
-                    },
-                    onSubmit = {
-                        verifyIncomeComplete.value = true
-                    }
-                )
-            }
-
             !governmentFundraisersComplete.value -> {
                 GovernmentFundraisersScreen(
                     onBackClick = {
-                        verifyIncomeComplete.value = false
+                        insuranceDetailsComplete.value = false
                     },
                     onFinish = {
                         governmentFundraisersComplete.value = true

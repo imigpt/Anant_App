@@ -1,20 +1,6 @@
 package com.example.anantapp.data.model
 
 /**
- * UI State for Login Screen
- */
-data class LoginUiState(
-    val phoneNumber: String = "",
-    val otp: String = "",
-    val isPhoneValid: Boolean = false,
-    val isOtpValid: Boolean = false,
-    val showOtpField: Boolean = false,
-    val isLoading: Boolean = false,
-    val errorMessage: String? = null,
-    val successMessage: String? = null,
-)
-
-/**
  * Request data for OTP generation
  */
 data class OtpRequest(

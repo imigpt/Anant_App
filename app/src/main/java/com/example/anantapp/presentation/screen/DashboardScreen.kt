@@ -17,14 +17,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 
 @Composable
 fun DashboardScreen(
-    onHomeClick: () -> Unit,
-    onAnalyticsClick: () -> Unit,
-    onNotificationClick: () -> Unit,
-    onProfileClick: () -> Unit
+    onHomeClick: () -> Unit = {},
+    onAnalyticsClick: () -> Unit = {},
+    onNotificationClick: () -> Unit = {},
+    onProfileClick: () -> Unit = {}
 ) {
     // State to track which tab is currently selected
     var selectedItemIndex by remember { mutableIntStateOf(0) }
@@ -142,4 +143,10 @@ private fun NavigationItemDashboard(
             tint = if (isSelected) selectedColor else unselectedColor
         )
     }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun DashboardScreenPreview() {
+    DashboardScreen()
 }

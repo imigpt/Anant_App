@@ -13,7 +13,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.anantapp.ui.components.customShadow
 
 /**
@@ -39,7 +42,7 @@ fun ThemedCard(
             .background(theme.cardBackground)
             .border(
                 width = 1.dp,
-                color = androidx.compose.ui.graphics.Color.White.copy(alpha = 0.6f),
+                color = Color.White.copy(alpha = 0.6f),
                 shape = RoundedCornerShape(theme.cornerRadius)
             )
             .padding(16.dp)
@@ -72,8 +75,8 @@ fun ThemedButton(
     ) {
         Text(
             text = text,
-            color = androidx.compose.ui.graphics.Color.White,
-            fontSize = androidx.compose.ui.unit.sp(16)
+            color = Color.White,
+            fontSize = 16.sp
         )
     }
 }
@@ -106,8 +109,8 @@ fun ThemedTitle(
     Text(
         text = text,
         color = theme.textPrimary,
-        fontSize = androidx.compose.ui.unit.sp(28),
-        fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+        fontSize = 28.sp,
+        fontWeight = FontWeight.Bold,
         modifier = modifier
     )
 }
@@ -121,7 +124,7 @@ fun ThemedSubtitle(
     Text(
         text = text,
         color = theme.textSecondary,
-        fontSize = androidx.compose.ui.unit.sp(14),
+        fontSize = 14.sp,
         modifier = modifier
     )
 }

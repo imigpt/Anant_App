@@ -68,6 +68,9 @@ dependencies {
     implementation("androidx.navigation:navigation-compose:2.8.7")
     implementation(libs.androidx.compose.foundation)
 
+    // DataStore
+    implementation(libs.androidx.datastore.preferences)
+
     // Coil for Image Loading
     implementation(libs.coil.compose)
 
