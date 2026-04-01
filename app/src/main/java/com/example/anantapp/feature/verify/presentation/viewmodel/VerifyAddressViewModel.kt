@@ -1,9 +1,13 @@
 package com.example.anantapp.feature.verify.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 data class VerifyAddressUiState(
     val homeAddress: String = "",
@@ -28,26 +32,34 @@ class VerifyAddressViewModel : ViewModel() {
     val uiState: StateFlow<VerifyAddressUiState> = _uiState.asStateFlow()
 
     fun updateField(fieldName: String, value: String) {
-        _uiState.value = when (fieldName) {
-            "homeAddress" -> _uiState.value.copy(homeAddress = value)
-            "houseFlatNumber" -> _uiState.value.copy(houseFlatNumber = value)
-            "address" -> _uiState.value.copy(address = value)
-            "city" -> _uiState.value.copy(city = value)
-            "state" -> _uiState.value.copy(state = value)
-            "pincode" -> _uiState.value.copy(pincode = value.take(6))
-            else -> _uiState.value
+        _uiState.update { currentState ->
+            when (fieldName) {
+                "homeAddress" -> currentState.copy(homeAddress = value)
+                "houseFlatNumber" -> currentState.copy(houseFlatNumber = value)
+                "address" -> currentState.copy(address = value)
+                "city" -> currentState.copy(city = value)
+                "state" -> currentState.copy(state = value)
+                "pincode" -> currentState.copy(pincode = value.take(6))
+                else -> currentState
+            }
         }
     }
 
     fun submitAddressVerification() {
-        _uiState.value = _uiState.value.copy(isLoading = true)
-        // API call would go here
+        _uiState.update { it.copy(isLoading = true) }
+        
+        viewModelScope.launch {
+            delay(1000) // Simulate network delay
+            _uiState.update { 
+                it.copy(
+                    isLoading = false,
+                    successMessage = "Address verification successful!"
+                )
+            }
+        }
     }
 
     fun clearMessages() {
-        _uiState.value = _uiState.value.copy(
-            successMessage = null,
-            errorMessage = null
-        )
+        _uiState.update { it.copy(successMessage = null, errorMessage = null) }
     }
 }

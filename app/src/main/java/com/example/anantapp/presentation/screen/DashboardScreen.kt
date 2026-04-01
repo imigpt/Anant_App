@@ -29,88 +29,154 @@ fun DashboardScreen(
 ) {
     // State to track which tab is currently selected
     var selectedItemIndex by remember { mutableIntStateOf(0) }
+    // State to track fundraiser flow (none = not in fundraiser flow, select_category = selecting category, create = creating)
+    var fundraiserFlowState by remember { mutableStateOf<String?>(null) }
 
     Scaffold(
         containerColor = Color.White, // Makes the whole background blank white
         bottomBar = {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Color.White)
-            ) {
-                // Navigation items container
-                Row(
+            // FIX: Only show the bottom navigation bar if we are NOT on the Analytics tab (index 1)
+            if (selectedItemIndex != 1) {
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(80.dp)
-                        .padding(horizontal = 16.dp),
-                    horizontalArrangement = Arrangement.SpaceEvenly,
-                    verticalAlignment = Alignment.CenterVertically
+                        .background(Color.White)
                 ) {
-                    // Home
-                    NavigationItemDashboard(
-                        selectedIcon = Icons.Filled.Home,
-                        unselectedIcon = Icons.Outlined.Home,
-                        isSelected = selectedItemIndex == 0,
-                        onClick = {
-                            selectedItemIndex = 0
-                            onHomeClick()
-                        }
-                    )
+                    // Navigation items container
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(80.dp)
+                            .padding(horizontal = 16.dp),
+                        horizontalArrangement = Arrangement.SpaceEvenly,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        // Home
+                        NavigationItemDashboard(
+                            selectedIcon = Icons.Filled.Home,
+                            unselectedIcon = Icons.Outlined.Home,
+                            isSelected = selectedItemIndex == 0,
+                            onClick = {
+                                selectedItemIndex = 0
+                                onHomeClick()
+                            }
+                        )
 
-                    // Analytics/Chart
-                    NavigationItemDashboard(
-                        selectedIcon = Icons.Outlined.BarChart,
-                        unselectedIcon = Icons.Outlined.BarChart,
-                        isSelected = selectedItemIndex == 1,
-                        onClick = {
-                            selectedItemIndex = 1
-                            onAnalyticsClick()
-                        }
-                    )
+                        // Analytics/Chart
+                        NavigationItemDashboard(
+                            selectedIcon = Icons.Outlined.BarChart,
+                            unselectedIcon = Icons.Outlined.BarChart,
+                            isSelected = selectedItemIndex == 1,
+                            onClick = {
+                                selectedItemIndex = 1
+                                fundraiserFlowState = "select_category"
+                                onAnalyticsClick()
+                            }
+                        )
 
-                    // Notifications
-                    NavigationItemDashboard(
-                        selectedIcon = Icons.Outlined.Notifications,
-                        unselectedIcon = Icons.Outlined.Notifications,
-                        isSelected = selectedItemIndex == 2,
-                        onClick = {
-                            selectedItemIndex = 2
-                            onNotificationClick()
-                        }
-                    )
+                        // Notifications
+                        NavigationItemDashboard(
+                            selectedIcon = Icons.Outlined.Notifications,
+                            unselectedIcon = Icons.Outlined.Notifications,
+                            isSelected = selectedItemIndex == 2,
+                            onClick = {
+                                selectedItemIndex = 2
+                                onNotificationClick()
+                            }
+                        )
 
-                    // Profile
-                    NavigationItemDashboard(
-                        selectedIcon = Icons.Outlined.Person,
-                        unselectedIcon = Icons.Outlined.Person,
-                        isSelected = selectedItemIndex == 3,
-                        onClick = {
-                            selectedItemIndex = 3
-                            onProfileClick()
-                        }
-                    )
+                        // Profile
+                        NavigationItemDashboard(
+                            selectedIcon = Icons.Outlined.Person,
+                            unselectedIcon = Icons.Outlined.Person,
+                            isSelected = selectedItemIndex == 3,
+                            onClick = {
+                                selectedItemIndex = 3
+                                onProfileClick()
+                            }
+                        )
+                    }
                 }
             }
         }
     ) { innerPadding ->
         // Main content area that switches based on the selected tab
         Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
+            modifier = Modifier.fillMaxSize()
         ) {
             when (selectedItemIndex) {
-                0 -> BalanceScreen(
-                    onHomeClick = onHomeClick,
-                    onAnalyticsClick = onAnalyticsClick,
-                    onNotificationClick = onNotificationClick,
-                    onProfileClick = onProfileClick
-                )
-                // Tabs 1, 2, and 3 are left empty to show the blank white screen for now
-                1 -> {}
-                2 -> {}
-                3 -> {}
+                0 -> Box(modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)) {
+                    HomeScreen(
+                        onDonorClick = {},
+                        onHistoryClick = {},
+                        onHomeClick = onHomeClick,
+                        onAnalyticsClick = onAnalyticsClick,
+                        onNotificationClick = onNotificationClick,
+                        onProfileClick = onProfileClick,
+                        onTransferClick = {},
+                        onNomineeClick = {},
+                        onAddDonationClick = {},
+                        onSettingsClick = {},
+                        onQRCodeScannerClick = {},
+                        onGovernmentFundraisersClick = {}
+                    )
+                }
+                1 -> {
+                    when (fundraiserFlowState) {
+                        "select_category" -> Box(modifier = Modifier.fillMaxSize()) {
+                            SelectFundraiserCategoryScreen(
+                                onBackClick = { selectedItemIndex = 0 },
+                                onNextClick = { _, _ -> fundraiserFlowState = "create" }
+                            )
+                        }
+                        "create" -> Box(modifier = Modifier.fillMaxSize()) {
+                            CreateFundraiserScreen(
+                                onBackClick = { fundraiserFlowState = "select_category" },
+                                onDraftSaved = { fundraiserFlowState = null; selectedItemIndex = 0 },
+                                onFundraiserCreated = { },
+                                onNavigateToTargetPayments = { fundraiserFlowState = "target_payments" }
+                            )
+                        }
+                        "target_payments" -> Box(modifier = Modifier.fillMaxSize()) {
+                            TargetAndPaymentsScreen(
+                                onBackClick = { fundraiserFlowState = "create" },
+                                onDraftSaved = { fundraiserFlowState = null; selectedItemIndex = 0 },
+                                onFundraiserPublished = { _ -> fundraiserFlowState = "preview_submit" }
+                            )
+                        }
+                        "preview_submit" -> Box(modifier = Modifier.fillMaxSize()) {
+                            PreviewAndSubmitScreen(
+                                onBackClick = { fundraiserFlowState = "target_payments" },
+                                onDraftSaved = { fundraiserFlowState = null; selectedItemIndex = 0 },
+                                onSubmitSuccess = { _ -> fundraiserFlowState = null; selectedItemIndex = 0 }
+                            )
+                        }
+                        else -> Box(modifier = Modifier.fillMaxSize()) {
+                            SelectFundraiserCategoryScreen(
+                                onBackClick = { selectedItemIndex = 0 },
+                                onNextClick = { _, _ -> fundraiserFlowState = "create" }
+                            )
+                        }
+                    }
+                }
+                2 -> {
+                    // Placeholder for Notifications Screen
+                }
+                3 -> Box(modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)) {
+                    ProfileSettingsScreen(
+                        onBackClick = { selectedItemIndex = 0 },
+                        onContactClick = {},
+                        onFamilyClick = {},
+                        onBankClick = {},
+                        onInsuranceClick = {},
+                        onMedicalClick = {},
+                        onLogoutClick = { selectedItemIndex = 0 }
+                    )
+                }
             }
         }
     }

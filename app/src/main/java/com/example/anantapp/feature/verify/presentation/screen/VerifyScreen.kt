@@ -9,26 +9,33 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Assignment
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.anantapp.feature.verify.presentation.viewmodel.VerifyViewModel
+import com.example.anantapp.feature.verify.presentation.viewmodel.VerifyUiState
 
+// Exact Color definitions
+private val OrangeGradientStart = Color(0xFFFF6300)
+private val OrangeGradientEnd = Color(0xFFFFCF11)
 private val PurpleAccent = Color(0xFF9500FF)
 private val RedAccent = Color(0xFFFF6264)
+private val PurpleBlobColor = Color(0xFFA142FF)
+private val GreenGradientStart = Color(0xFF6B9B25)
+private val GreenGradientEnd = Color(0xFFB5E453)
+private val SuccessCheckColor = Color(0xFF6B9B25)
 private val MainBackground = Color(0xFFFAFAFA)
 private val TextPrimary = Color(0xFF000000)
 private val TextSecondary = Color(0xFF888888)
@@ -40,15 +47,28 @@ fun VerifyScreen(
     onSkipClick: () -> Unit = {},
     onVerifySuccess: () -> Unit = {},
 ) {
-    val uiState = viewModel.uiState.collectAsState().value
+    val uiState by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
-    var showBottomSheet by remember { mutableStateOf(false) }
+
     var isSuccessScreen by remember { mutableStateOf(false) }
+
+    // Bottom Sheet State
     val sheetState = rememberModalBottomSheetState()
+    var showBottomSheet by remember { mutableStateOf(false) }
+    var currentDocumentForUpload by remember { mutableStateOf("") }
 
     LaunchedEffect(uiState.successMessage) {
         if (uiState.successMessage != null) {
             isSuccessScreen = true
+            snackbarHostState.showSnackbar(uiState.successMessage!!)
+            viewModel.clearMessages()
+        }
+    }
+
+    LaunchedEffect(uiState.errorMessage) {
+        if (uiState.errorMessage != null) {
+            snackbarHostState.showSnackbar(uiState.errorMessage!!)
+            viewModel.clearMessages()
         }
     }
 
@@ -57,120 +77,55 @@ fun VerifyScreen(
             .fillMaxSize()
             .background(MainBackground)
     ) {
-        BackgroundDecoration(isSuccessScreen)
+        BackgroundDecoration(isSuccess = isSuccessScreen)
 
-        Card(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 24.dp, vertical = 48.dp),
-            shape = RoundedCornerShape(24.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.95f)),
-            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 24.dp, vertical = 32.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(24.dp)
-                    .verticalScroll(rememberScrollState()),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                // Skip Button
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 16.dp),
-                    horizontalArrangement = Arrangement.End
-                ) {
-                    Text(
-                        text = "Skip",
-                        fontSize = 14.sp,
-                        color = PurpleAccent,
-                        modifier = Modifier.clickable { onSkipClick() }
-                    )
-                }
+            Spacer(modifier = Modifier.weight(1f))
 
-                if (!isSuccessScreen) {
-                    Spacer(modifier = Modifier.height(16.dp))
+            UploadCard(
+                uiState = uiState,
+                isSuccess = isSuccessScreen,
+                onSkipClick = onSkipClick,
+                onDocumentSelected = { documentName ->
+                    currentDocumentForUpload = documentName
+                    showBottomSheet = true
+                },
+                onSubmitClick = viewModel::submitVerification,
+                onContinueClick = { onVerifySuccess() }
+            )
 
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.Assignment,
-                        contentDescription = null,
-                        modifier = Modifier.size(80.dp),
-                        tint = PurpleAccent
-                    )
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    Text(
-                        text = "Document Verification",
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = TextPrimary
-                    )
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    Text(
-                        text = "Upload your KYC documents for verification",
-                        fontSize = 14.sp,
-                        color = TextSecondary,
-                        textAlign = TextAlign.Center
-                    )
-
-                    Spacer(modifier = Modifier.height(32.dp))
-
-                    // Document Types
-                    DocumentTypeSection {
-                        showBottomSheet = true
-                    }
-
-                    Spacer(modifier = Modifier.height(24.dp))
-
-                    // Uploaded Documents List
-                    if (uiState.uploadedDocuments.isNotEmpty()) {
-                        Column(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            uiState.uploadedDocuments.forEach { doc ->
-                                UploadedDocumentCard(doc) {
-                                    viewModel.removeDocument(doc.id)
-                                }
-                            }
-                        }
-
-                        Spacer(modifier = Modifier.height(24.dp))
-                    }
-
-                    // Submit Button
-                    GradientButton(
-                        text = "Verify Documents",
-                        onClick = { viewModel.submitVerification() },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(56.dp)
-                    )
-                } else {
-                    SuccessContent(onVerifySuccess)
-                }
-            }
+            Spacer(modifier = Modifier.weight(1f))
+            PrivacyFooter()
         }
 
-        if (uiState.isLoading) {
-            LoadingOverlay()
-        }
+        if (uiState.isLoading) LoadingOverlay()
 
-        SnackbarHost(snackbarHostState)
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(16.dp)
+        )
     }
 
+    // Bottom Sheet for Camera / Photo selection
     if (showBottomSheet) {
         ModalBottomSheet(
             onDismissRequest = { showBottomSheet = false },
-            sheetState = sheetState
+            sheetState = sheetState,
+            containerColor = Color.White
         ) {
             UploadOptionsBottomSheet(
-                onOptionSelected = { documentType ->
-                    viewModel.selectDocument(documentType)
+                documentName = currentDocumentForUpload,
+                onOptionSelected = {
+                    viewModel.markDocumentUploaded(currentDocumentForUpload)
                     showBottomSheet = false
                 }
             )
@@ -179,265 +134,324 @@ fun VerifyScreen(
 }
 
 @Composable
-private fun DocumentTypeSection(onUploadClick: () -> Unit) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        listOf("Aadhar Card", "PAN Card", "Passport", "Driving License").forEach { doc ->
-            DocumentButton(doc) { onUploadClick() }
-        }
-    }
-}
-
-@Composable
-private fun DocumentButton(
-    title: String,
-    onClick: () -> Unit
-) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(56.dp)
-            .border(
-                width = 2.dp,
-                brush = Brush.horizontalGradient(listOf(PurpleAccent, RedAccent)),
-                shape = RoundedCornerShape(12.dp)
-            )
-            .clickable { onClick() },
-        contentAlignment = Alignment.Center
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text(
-                text = title,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = TextPrimary
-            )
-            Icon(
-                imageVector = Icons.Filled.Upload,
-                contentDescription = null,
-                tint = PurpleAccent,
-                modifier = Modifier.size(20.dp)
-            )
-        }
-    }
-}
-
-@Composable
-private fun UploadedDocumentCard(
-    document: com.example.anantapp.feature.verify.presentation.viewmodel.DocumentUpload,
-    onRemove: () -> Unit
-) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp)
-            .background(Color(0xFFF5F5F5), RoundedCornerShape(12.dp))
-            .padding(12.dp)
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = document.documentType,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = TextPrimary
-                )
-                Text(
-                    text = document.status.uppercase(),
-                    fontSize = 12.sp,
-                    color = if (document.status == "approved") Color.Green else Color(0xFFFFA500)
-                )
-            }
-            Icon(
-                imageVector = Icons.Filled.Check,
-                contentDescription = null,
-                modifier = Modifier
-                    .size(24.dp)
-                    .clickable { onRemove() },
-                tint = PurpleAccent
-            )
-        }
-    }
-}
-
-@Composable
 private fun UploadOptionsBottomSheet(
+    documentName: String,
     onOptionSelected: (String) -> Unit
 ) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(24.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            text = "Upload Document",
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Bold
+            text = "Upload $documentName",
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Bold,
+            color = TextPrimary
         )
-        
-        UploadOptionItem(Icons.Filled.CameraAlt, "Take Photo") {
-            onOptionSelected("Camera")
-        }
-        
-        UploadOptionItem(Icons.Filled.PhotoLibrary, "Choose from Gallery") {
-            onOptionSelected("Gallery")
-        }
+        Spacer(modifier = Modifier.height(24.dp))
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceEvenly
+        ) {
+            // Camera Option
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier
+                    .clickable { onOptionSelected("Camera") }
+                    .padding(16.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(64.dp)
+                        .background(Color(0xFFFFF3E0), CircleShape),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(Icons.Filled.CameraAlt, contentDescription = "Camera", tint = OrangeGradientStart, modifier = Modifier.size(32.dp))
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                Text("Camera", fontWeight = FontWeight.Medium)
+            }
+
+            // Photo Option
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier
+                    .clickable { onOptionSelected("Photo") }
+                    .padding(16.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(64.dp)
+                        .background(Color(0xFFE8F5E9), CircleShape),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(Icons.Filled.PhotoLibrary, contentDescription = "Photo", tint = GreenGradientStart, modifier = Modifier.size(32.dp))
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                Text("Photo", fontWeight = FontWeight.Medium)
+            }
+        }
+        Spacer(modifier = Modifier.height(32.dp))
     }
 }
 
 @Composable
-private fun UploadOptionItem(
-    icon: ImageVector,
-    label: String,
-    onClick: () -> Unit
+private fun UploadCard(
+    uiState: VerifyUiState,
+    isSuccess: Boolean,
+    onSkipClick: () -> Unit = {},
+    onDocumentSelected: (String) -> Unit = {},
+    onSubmitClick: () -> Unit = {},
+    onContinueClick: () -> Unit = {},
 ) {
-    Row(
+    Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onClick() }
-            .padding(12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(16.dp)
+            .shadow(
+                elevation = 24.dp,
+                shape = RoundedCornerShape(32.dp),
+                spotColor = Color.Black.copy(alpha = 0.15f),
+                ambientColor = Color.Black.copy(alpha = 0.1f)
+            )
+            .border(
+                width = 1.5.dp,
+                color = Color.White.copy(alpha = 0.4f),
+                shape = RoundedCornerShape(32.dp)
+            )
+            .background(
+                brush = Brush.linearGradient(
+                    colors = listOf(Color.White.copy(alpha = 0.6f), Color.White.copy(alpha = 0.3f))
+                ),
+                shape = RoundedCornerShape(32.dp)
+            ),
+        shape = RoundedCornerShape(32.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.Transparent)
     ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            modifier = Modifier.size(32.dp),
-            tint = PurpleAccent
-        )
-        Text(text = label, fontSize = 16.sp)
-    }
-}
-
-@Composable
-private fun ColumnScope.SuccessContent(onSuccess: () -> Unit) {
-    // Replaced weight with fixed Spacer for scrollable Column compatibility
-    Spacer(modifier = Modifier.height(64.dp))
-
-    Icon(
-        imageVector = Icons.Filled.Check,
-        contentDescription = null,
-        modifier = Modifier
-            .size(80.dp)
-            .background(Color(0xFF6B9B25), CircleShape)
-            .padding(12.dp),
-        tint = Color.White
-    )
-
-    Spacer(modifier = Modifier.height(16.dp))
-
-    Text(
-        text = "Documents Verified!",
-        fontSize = 24.sp,
-        fontWeight = FontWeight.Bold,
-        color = TextPrimary
-    )
-
-    Spacer(modifier = Modifier.height(8.dp))
-
-    Text(
-        text = "Your documents have been successfully verified",
-        fontSize = 14.sp,
-        color = TextSecondary,
-        textAlign = TextAlign.Center
-    )
-
-    Spacer(modifier = Modifier.height(64.dp))
-
-    GradientButton(
-        text = "Continue",
-        onClick = { onSuccess() },
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(56.dp)
-    )
-}
-
-@Composable
-private fun GradientButton(
-    text: String,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Button(
-        onClick = onClick,
-        modifier = modifier
-            .clip(RoundedCornerShape(12.dp)),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = Color.Transparent
-        ),
-        shape = RoundedCornerShape(12.dp)
-    ) {
-        Box(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(
-                    brush = Brush.horizontalGradient(
-                        listOf(PurpleAccent, RedAccent)
-                    ),
-                    shape = RoundedCornerShape(12.dp)
-                )
-                .padding(horizontal = 24.dp, vertical = 12.dp),
-            contentAlignment = Alignment.Center
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(
-                text = text,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.White
+            if (!isSuccess) {
+                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.TopEnd) {
+                    Box(
+                        modifier = Modifier
+                            .border(1.dp, Color(0xFFE0E0E0), RoundedCornerShape(16.dp))
+                            .clip(RoundedCornerShape(16.dp))
+                            .background(Color.White)
+                            .clickable { onSkipClick() }
+                            .padding(horizontal = 12.dp, vertical = 6.dp)
+                    ) {
+                        Text("Skip >>", fontSize = 12.sp, color = TextSecondary)
+                    }
+                }
+            } else {
+                Spacer(modifier = Modifier.height(28.dp))
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            if (isSuccess) SuccessIconSection() else UploadIconSection()
+
+            Spacer(modifier = Modifier.height(40.dp))
+
+            // Document options
+            DocumentOptionsSection(
+                uploadedDocuments = uiState.uploadedDocumentNames,
+                isSuccess = isSuccess,
+                onDocumentSelected = onDocumentSelected
             )
+
+            Spacer(modifier = Modifier.height(40.dp))
+
+            if (isSuccess) {
+                SolidGradientButton(text = "Continue", onClick = onContinueClick)
+            } else {
+                GradientBorderButton(
+                    text = "Submit",
+                    onClick = onSubmitClick,
+                    isEnabled = uiState.isSubmitEnabled && !uiState.isLoading
+                )
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+        }
+    }
+}
+
+@Composable
+private fun DocumentOptionsSection(
+    uploadedDocuments: Set<String>,
+    isSuccess: Boolean,
+    onDocumentSelected: (String) -> Unit = {},
+) {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            DocumentButton(
+                label = "PAN Card",
+                icon = Icons.Filled.Assignment,
+                isUploaded = uploadedDocuments.contains("PAN Card"),
+                isSuccess = isSuccess,
+                onClick = { onDocumentSelected("PAN Card") },
+                modifier = Modifier.weight(1f)
+            )
+
+            DocumentButton(
+                label = "Aadhaar",
+                icon = Icons.Filled.Fingerprint,
+                isUploaded = uploadedDocuments.contains("Aadhaar"),
+                isSuccess = isSuccess,
+                onClick = { onDocumentSelected("Aadhaar") },
+                modifier = Modifier.weight(1f)
+            )
+        }
+
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+            DocumentButton(
+                label = "Driving License",
+                icon = Icons.Filled.CreditCard,
+                isUploaded = uploadedDocuments.contains("Driving License"),
+                isSuccess = isSuccess,
+                onClick = { onDocumentSelected("Driving License") },
+                modifier = Modifier.weight(0.7f)
+            )
+        }
+    }
+}
+
+@Composable
+private fun DocumentButton(
+    label: String,
+    icon: ImageVector,
+    isUploaded: Boolean,
+    isSuccess: Boolean = false,
+    onClick: () -> Unit = {},
+    modifier: Modifier = Modifier,
+) {
+    val gradientColors = if (isSuccess) {
+        listOf(GreenGradientStart, GreenGradientEnd)
+    } else {
+        listOf(OrangeGradientStart, OrangeGradientEnd)
+    }
+
+    Box(
+        modifier = modifier
+            .height(50.dp)
+            .background(brush = Brush.linearGradient(colors = gradientColors), shape = RoundedCornerShape(50))
+            .shadow(elevation = 6.dp, shape = RoundedCornerShape(50), clip = false, spotColor = gradientColors.first().copy(alpha = 0.5f))
+            .border(width = if (isUploaded && !isSuccess) 2.dp else 0.dp, color = if (isUploaded) Color.White else Color.Transparent, shape = RoundedCornerShape(50))
+            .clip(RoundedCornerShape(50))
+            .clickable(enabled = !isSuccess) { onClick() }
+            .padding(horizontal = 8.dp),
+        contentAlignment = Alignment.CenterStart
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Start,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier.size(34.dp).background(Color.White, CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = if (isUploaded && !isSuccess) Icons.Filled.CheckCircle else icon,
+                    contentDescription = label,
+                    tint = if (isUploaded && !isSuccess) SuccessCheckColor else TextPrimary,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(label, fontSize = 12.sp, fontWeight = FontWeight.Medium, color = TextPrimary)
         }
     }
 }
 
 @Composable
 private fun LoadingOverlay() {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.Black.copy(alpha = 0.3f)),
-        contentAlignment = Alignment.Center
-    ) {
-        CircularProgressIndicator(
-            color = PurpleAccent,
-            modifier = Modifier.size(48.dp)
-        )
+    Box(modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.3f)), contentAlignment = Alignment.Center) {
+        Box(modifier = Modifier.size(80.dp).background(Color.White, RoundedCornerShape(16.dp)), contentAlignment = Alignment.Center) {
+            CircularProgressIndicator(color = OrangeGradientStart, modifier = Modifier.size(48.dp))
+        }
     }
 }
 
 @Composable
 private fun BoxScope.BackgroundDecoration(isSuccess: Boolean) {
+    if (!isSuccess) {
+        Box(modifier = Modifier.size(240.dp).align(Alignment.TopStart).offset((-40).dp, 80.dp).background(brush = Brush.linearGradient(listOf(OrangeGradientStart, OrangeGradientEnd)), shape = CircleShape))
+        Box(modifier = Modifier.size(280.dp).align(Alignment.BottomEnd).offset(80.dp, (-80).dp).background(brush = Brush.linearGradient(listOf(OrangeGradientStart, OrangeGradientEnd)), shape = CircleShape))
+    } else {
+        Box(modifier = Modifier.size(220.dp).align(Alignment.TopStart).offset((-20).dp, 60.dp).background(PurpleBlobColor, CircleShape))
+        Box(modifier = Modifier.size(80.dp).align(Alignment.TopEnd).offset((-40).dp, 80.dp).background(brush = Brush.linearGradient(listOf(OrangeGradientStart, OrangeGradientEnd)), shape = CircleShape))
+        Box(modifier = Modifier.size(140.dp).align(Alignment.BottomStart).offset((-20).dp, (-180).dp).background(brush = Brush.linearGradient(listOf(OrangeGradientStart, OrangeGradientEnd)), shape = CircleShape))
+    }
+}
+
+@Composable
+private fun UploadIconSection() {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Icon(Icons.Filled.Upload, contentDescription = "Upload", tint = TextPrimary, modifier = Modifier.size(64.dp))
+        Spacer(modifier = Modifier.height(8.dp))
+        Text("Upload", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
+    }
+}
+
+@Composable
+private fun SuccessIconSection() {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Box(modifier = Modifier.size(80.dp).border(4.dp, SuccessCheckColor, CircleShape), contentAlignment = Alignment.Center) {
+            Icon(Icons.Filled.Check, contentDescription = "Success", tint = SuccessCheckColor, modifier = Modifier.size(48.dp))
+        }
+        Spacer(modifier = Modifier.height(16.dp))
+        Text("Successfully uploaded", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
+    }
+}
+
+@Composable
+private fun GradientBorderButton(text: String, onClick: () -> Unit, isEnabled: Boolean, modifier: Modifier = Modifier) {
     Box(
-        modifier = Modifier
-            .size(300.dp)
-            .background(
-                brush = Brush.radialGradient(
-                    listOf(
-                        if (isSuccess) Color(0xFF6B9B25).copy(alpha = 0.1f) else PurpleAccent.copy(alpha = 0.1f),
-                        Color.Transparent
-                    )
-                ),
-                shape = CircleShape
-            )
-            .align(Alignment.TopEnd)
-    )
+        modifier = modifier
+            .fillMaxWidth()
+            .height(54.dp)
+            .background(brush = Brush.linearGradient(listOf(PurpleAccent, RedAccent)), shape = RoundedCornerShape(50))
+            .padding(2.dp)
+            .background(if (isEnabled) Color.White else Color(0xFFF0F0F0), RoundedCornerShape(50))
+            .clip(RoundedCornerShape(50))
+            .clickable(enabled = isEnabled) { onClick() },
+        contentAlignment = Alignment.Center) {
+        Text(text, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = if (isEnabled) TextPrimary else TextSecondary)
+    }
+}
+
+@Composable
+private fun SolidGradientButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(54.dp)
+            .background(brush = Brush.linearGradient(listOf(OrangeGradientStart, OrangeGradientEnd)), shape = RoundedCornerShape(50))
+            .clip(RoundedCornerShape(50))
+            .clickable { onClick() },
+        contentAlignment = Alignment.Center) {
+        Text(text, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White)
+    }
+}
+
+@Composable
+private fun PrivacyFooter() {
+    Row(modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
+        Icon(Icons.Filled.Lock, contentDescription = "Secure", tint = Color(0xFFB0B0B0), modifier = Modifier.size(14.dp))
+        Spacer(modifier = Modifier.width(6.dp))
+        Text("Your data stays private & encrypted.", fontSize = 12.sp, color = Color(0xFFB0B0B0))
+    }
 }
 
 @Preview(showBackground = true, showSystemUi = true)

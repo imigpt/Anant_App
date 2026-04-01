@@ -1,9 +1,12 @@
 package com.example.anantapp.feature.verify.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 
 data class FamilyDetailsUiState(
     val isMarried: Boolean = false,
@@ -62,8 +65,15 @@ class FamilyDetailsViewModel : ViewModel() {
     }
 
     fun submitFamilyDetails() {
-        _uiState.value = _uiState.value.copy(isLoading = true)
-        // API call would go here
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isLoading = true)
+            // Simulate API call
+            delay(1000)
+            _uiState.value = _uiState.value.copy(
+                isLoading = false,
+                successMessage = "Family details submitted successfully"
+            )
+        }
     }
 
     fun clearMessages() {

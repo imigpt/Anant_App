@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 
 data class VerifyUiState(
     val uploadedDocuments: List<DocumentUpload> = emptyList(),
@@ -11,7 +12,18 @@ data class VerifyUiState(
     val isLoading: Boolean = false,
     val errorMessage: String? = null,
     val successMessage: String? = null
-)
+) {
+    val isSubmitEnabled: Boolean
+        get() {
+            val types = uploadedDocuments.map { it.documentType }
+            return types.contains("PAN Card") && 
+                   types.contains("Aadhaar") && 
+                   types.contains("Driving License")
+        }
+
+    val uploadedDocumentNames: Set<String>
+        get() = uploadedDocuments.map { it.documentType }.toSet()
+}
 
 data class DocumentUpload(
     val id: String,
@@ -32,41 +44,55 @@ class VerifyViewModel : ViewModel() {
     val uiState: StateFlow<VerifyUiState> = _uiState.asStateFlow()
 
     fun uploadDocument(documentType: String, filePath: String) {
-        val newDocument = DocumentUpload(
-            id = "doc_${System.currentTimeMillis()}",
-            documentType = documentType,
-            filePath = filePath,
-            uploadedAt = "Now",
-            status = "pending"
-        )
-        val updatedDocuments = _uiState.value.uploadedDocuments + newDocument
-        _uiState.value = _uiState.value.copy(uploadedDocuments = updatedDocuments)
+        _uiState.update { currentState ->
+            val newDocument = DocumentUpload(
+                id = "doc_${System.currentTimeMillis()}",
+                documentType = documentType,
+                filePath = filePath,
+                uploadedAt = "Now",
+                status = "pending"
+            )
+            currentState.copy(uploadedDocuments = currentState.uploadedDocuments + newDocument)
+        }
+    }
+
+    fun markDocumentUploaded(documentName: String) {
+        uploadDocument(documentName, "dummy_path")
     }
 
     fun selectDocument(documentType: String) {
-        val currentSelected = _uiState.value.selectedDocuments.toMutableList()
-        if (currentSelected.contains(documentType)) {
-            currentSelected.remove(documentType)
-        } else {
-            currentSelected.add(documentType)
+        _uiState.update { currentState ->
+            val currentSelected = currentState.selectedDocuments.toMutableList()
+            if (currentSelected.contains(documentType)) {
+                currentSelected.remove(documentType)
+            } else {
+                currentSelected.add(documentType)
+            }
+            currentState.copy(selectedDocuments = currentSelected)
         }
-        _uiState.value = _uiState.value.copy(selectedDocuments = currentSelected)
     }
 
     fun removeDocument(documentId: String) {
-        val updatedDocuments = _uiState.value.uploadedDocuments.filter { it.id != documentId }
-        _uiState.value = _uiState.value.copy(uploadedDocuments = updatedDocuments)
+        _uiState.update { currentState ->
+            val updatedDocuments = currentState.uploadedDocuments.filter { it.id != documentId }
+            currentState.copy(uploadedDocuments = updatedDocuments)
+        }
     }
 
     fun submitVerification() {
-        _uiState.value = _uiState.value.copy(isLoading = true)
-        // API call would go here
+        if (!_uiState.value.isSubmitEnabled) return
+        
+        _uiState.update { it.copy(isLoading = true) }
+        // Simulate API call
+        _uiState.update { 
+            it.copy(
+                isLoading = false,
+                successMessage = "Verification Successful"
+            )
+        }
     }
 
     fun clearMessages() {
-        _uiState.value = _uiState.value.copy(
-            successMessage = null,
-            errorMessage = null
-        )
+        _uiState.update { it.copy(successMessage = null, errorMessage = null) }
     }
 }

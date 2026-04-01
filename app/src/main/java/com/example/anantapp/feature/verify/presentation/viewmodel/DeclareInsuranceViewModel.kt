@@ -62,7 +62,11 @@ class DeclareInsuranceViewModel : ViewModel() {
 
     fun submitInsuranceDetails() {
         _uiState.value = _uiState.value.copy(isLoading = true)
-        // API call would go here
+        // Simulate API call and set success message
+        _uiState.value = _uiState.value.copy(
+            isLoading = false,
+            successMessage = "Insurance details submitted successfully"
+        )
     }
 
     fun clearMessages() {

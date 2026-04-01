@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.anantapp.presentation.screen.AddBalanceScreen
 import com.example.anantapp.presentation.screen.BalanceScreen
 import com.example.anantapp.presentation.screen.DashboardScreen
 import com.example.anantapp.presentation.screen.DeclareInsuranceDetailsScreen
@@ -41,11 +42,13 @@ import com.example.anantapp.presentation.screen.ContactInformationScreen
 import com.example.anantapp.presentation.screen.TransactionScreen
 import com.example.anantapp.presentation.screen.UserDetailsScreen
 import com.example.anantapp.presentation.screen.VerifyIncomeScreen
+import com.example.anantapp.presentation.screen.WalletSettingsScreen
 import com.example.anantapp.ui.login.LoginScreen
 import com.example.anantapp.ui.onboarding.OnboardingScreen
 import com.example.anantapp.ui.theme.AnantAppTheme
 import com.example.anantapp.ui.screens.QRCodeScannerScreen
 import com.example.anantapp.ui.screens.AddNomineeCardsScreen
+import com.example.anantapp.ui.screens.LegalAndSupportScreen
 import com.example.anantapp.ui.screens.NomineeDetailsScreen
 import com.example.anantapp.ui.screens.NomineeOTPVerificationScreen
 import com.example.anantapp.ui.screens.FamilyMemberDetailsScreen
@@ -53,15 +56,10 @@ import com.example.anantapp.ui.verify.PhotoUploadScreen
 import com.example.anantapp.presentation.screen.ShareRealTimeLocationScreen
 import com.example.anantapp.presentation.screen.ManageFamilyMembersScreen
 import com.example.anantapp.presentation.screen.LocationSharedSuccessScreen
-import com.example.anantapp.presentation.screen.ThankyouScreen
 import com.example.anantapp.presentation.screen.LiveLocationMapScreen
 import com.example.anantapp.ui.verify.VerifyAddressScreen
 import com.example.anantapp.ui.verify.VerifyBankScreen
 import com.example.anantapp.ui.verify.VerifyScreen
-import android.content.Intent
-import androidx.activity.result.contract.ActivityResultContracts
-import android.net.Uri
-import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.BackHandler
 
 class MainActivity : ComponentActivity() {
@@ -89,9 +87,9 @@ private fun MainContent(modifier: Modifier = Modifier) {
     val generateQRCodeComplete = remember { mutableStateOf(true) }
     val userDetailsComplete = remember { mutableStateOf(true) }
     val deliveryAddressComplete = remember { mutableStateOf(true) }
-    val onboardingComplete = remember { mutableStateOf(false) }
-    val loginComplete = remember { mutableStateOf(false) }
-    val documentVerified = remember { mutableStateOf(false) }
+    val onboardingComplete = remember { mutableStateOf(true) }
+    val loginComplete = remember { mutableStateOf(true) }
+    val documentVerified = remember { mutableStateOf(true) }
     val bankVerified = remember { mutableStateOf(true) }
     val addressVerified = remember { mutableStateOf(true) }
     val photoUploaded = remember { mutableStateOf(true) }
@@ -184,25 +182,25 @@ private fun MainContent(modifier: Modifier = Modifier) {
             }
 
             currentScreen.value == "share_location" && (
-                orderSuccessComplete.value &&
-                orderStatusComplete.value &&
-                viewQRCodeComplete.value &&
-                generateQRInfoComplete.value &&
-                generateQRCodeComplete.value &&
-                userDetailsComplete.value &&
-                deliveryAddressComplete.value &&
-                onboardingComplete.value &&
-                loginComplete.value &&
-                documentVerified.value &&
-                bankVerified.value &&
-                addressVerified.value &&
-                photoUploaded.value &&
-                locationVerified.value &&
-                familyDetailsComplete.value &&
-                insuranceDetailsComplete.value &&
-                verifyIncomeComplete.value &&
-                governmentFundraisersComplete.value
-            ) && !locationShareSuccess.value -> {
+                    orderSuccessComplete.value &&
+                            orderStatusComplete.value &&
+                            viewQRCodeComplete.value &&
+                            generateQRInfoComplete.value &&
+                            generateQRCodeComplete.value &&
+                            userDetailsComplete.value &&
+                            deliveryAddressComplete.value &&
+                            onboardingComplete.value &&
+                            loginComplete.value &&
+                            documentVerified.value &&
+                            bankVerified.value &&
+                            addressVerified.value &&
+                            photoUploaded.value &&
+                            locationVerified.value &&
+                            familyDetailsComplete.value &&
+                            insuranceDetailsComplete.value &&
+                            verifyIncomeComplete.value &&
+                            governmentFundraisersComplete.value
+                    ) && !locationShareSuccess.value -> {
                 ShareRealTimeLocationScreen(
                     onBackClick = {
                         currentScreen.value = "add_nominee_cards"
@@ -219,25 +217,25 @@ private fun MainContent(modifier: Modifier = Modifier) {
             }
 
             currentScreen.value == "add_nominee_cards" && (
-                orderSuccessComplete.value &&
-                orderStatusComplete.value &&
-                viewQRCodeComplete.value &&
-                generateQRInfoComplete.value &&
-                generateQRCodeComplete.value &&
-                userDetailsComplete.value &&
-                deliveryAddressComplete.value &&
-                onboardingComplete.value &&
-                loginComplete.value &&
-                documentVerified.value &&
-                bankVerified.value &&
-                addressVerified.value &&
-                photoUploaded.value &&
-                locationVerified.value &&
-                familyDetailsComplete.value &&
-                insuranceDetailsComplete.value &&
-                verifyIncomeComplete.value &&
-                governmentFundraisersComplete.value
-            ) -> {
+                    orderSuccessComplete.value &&
+                            orderStatusComplete.value &&
+                            viewQRCodeComplete.value &&
+                            generateQRInfoComplete.value &&
+                            generateQRCodeComplete.value &&
+                            userDetailsComplete.value &&
+                            deliveryAddressComplete.value &&
+                            onboardingComplete.value &&
+                            loginComplete.value &&
+                            documentVerified.value &&
+                            bankVerified.value &&
+                            addressVerified.value &&
+                            photoUploaded.value &&
+                            locationVerified.value &&
+                            familyDetailsComplete.value &&
+                            insuranceDetailsComplete.value &&
+                            verifyIncomeComplete.value &&
+                            governmentFundraisersComplete.value
+                    ) -> {
                 AddNomineeCardsScreen(
                     onAddNomineeClick = {
                         // Navigate to Nominee Details
@@ -348,20 +346,19 @@ private fun MainContent(modifier: Modifier = Modifier) {
                 )
             }
 
+            !onboardingComplete.value -> {
+                OnboardingScreen(
+                    onOnboardingComplete = {
+                        onboardingComplete.value = true
+                    }
+                )
+            }
+
             !loginComplete.value -> {
                 LoginScreen(
                     viewModel = viewModel(),
                     onLoginSuccess = {
                         loginComplete.value = true
-                    }
-                )
-            }
-
-            !onboardingComplete.value -> {
-                OnboardingScreen(
-                    onOnboardingComplete = {
-                        onboardingComplete.value = true
-                        documentVerified.value = false
                     }
                 )
             }
@@ -374,7 +371,6 @@ private fun MainContent(modifier: Modifier = Modifier) {
                     },
                     onVerifySuccess = {
                         documentVerified.value = true
-                        bankVerified.value = false
                     }
                 )
             }
@@ -387,7 +383,6 @@ private fun MainContent(modifier: Modifier = Modifier) {
                     },
                     onSuccess = {
                         bankVerified.value = true
-                        addressVerified.value = false
                     }
                 )
             }
@@ -400,31 +395,6 @@ private fun MainContent(modifier: Modifier = Modifier) {
                     },
                     onSuccess = {
                         addressVerified.value = true
-                        familyDetailsComplete.value = false
-                    }
-                )
-            }
-
-            !familyDetailsComplete.value -> {
-                FamilyDetailsScreen(
-                    onSkip = {
-                        addressVerified.value = false
-                    },
-                    onSubmit = {
-                        familyDetailsComplete.value = true
-                        verifyIncomeComplete.value = false
-                    }
-                )
-            }
-
-            !verifyIncomeComplete.value -> {
-                VerifyIncomeScreen(
-                    onSkip = {
-                        familyDetailsComplete.value = false
-                    },
-                    onSubmit = {
-                        verifyIncomeComplete.value = true
-                        photoUploaded.value = false
                     }
                 )
             }
@@ -433,11 +403,10 @@ private fun MainContent(modifier: Modifier = Modifier) {
                 PhotoUploadScreen(
                     viewModel = viewModel(),
                     onSkipClick = {
-                        verifyIncomeComplete.value = false
+                        addressVerified.value = false
                     },
                     onSuccess = {
                         photoUploaded.value = true
-                        locationVerified.value = false
                     }
                 )
             }
@@ -453,10 +422,21 @@ private fun MainContent(modifier: Modifier = Modifier) {
                 )
             }
 
+            !familyDetailsComplete.value -> {
+                FamilyDetailsScreen(
+                    onSkip = {
+                        locationVerified.value = false
+                    },
+                    onSubmit = {
+                        familyDetailsComplete.value = true
+                    }
+                )
+            }
+
             !insuranceDetailsComplete.value -> {
                 DeclareInsuranceDetailsScreen(
                     onSkip = {
-                        locationVerified.value = false
+                        familyDetailsComplete.value = false
                     },
                     onSubmit = {
                         insuranceDetailsComplete.value = true
@@ -464,10 +444,16 @@ private fun MainContent(modifier: Modifier = Modifier) {
                 )
             }
 
+            !verifyIncomeComplete.value -> {
+                VerifyIncomeScreen {
+                    insuranceDetailsComplete.value = false
+                }
+            }
+
             !governmentFundraisersComplete.value -> {
                 GovernmentFundraisersScreen(
                     onBackClick = {
-                        insuranceDetailsComplete.value = false
+                        verifyIncomeComplete.value = false
                     },
                     onFinish = {
                         governmentFundraisersComplete.value = true
@@ -551,12 +537,18 @@ private fun MainContent(modifier: Modifier = Modifier) {
 
                     "home" -> {
                         HomeScreen(
-                            onDonorClick = { currentScreen.value = "donor" },
-                            onHistoryClick = { currentScreen.value = "donation_history" },
+                            onDonorClick = { currentScreen.value = "donation_history" },
+                            onHistoryClick = { currentScreen.value = "transaction" },
                             onHomeClick = { currentScreen.value = "home" },
                             onAnalyticsClick = { currentScreen.value = "dashboard" },
                             onNotificationClick = { /* Handle notifications */ },
-                            onProfileClick = { currentScreen.value = "profile_settings" }
+                            onProfileClick = { currentScreen.value = "profile_settings" },
+                            onTransferClick = { currentScreen.value = "add_balance" },
+                            onNomineeClick = { currentScreen.value = "add_nominee_cards" },
+                            onAddDonationClick = { currentScreen.value = "donor" },
+                            onSettingsClick = { currentScreen.value = "wallet_settings" },
+                            onQRCodeScannerClick = { currentScreen.value = "qr_code_scanner" },
+                            onGovernmentFundraisersClick = { currentScreen.value = "government_fundraisers" }
                         )
                     }
 
@@ -645,6 +637,63 @@ private fun MainContent(modifier: Modifier = Modifier) {
                                 // For now, just return to share location
                                 currentScreen.value = "share_location"
                             }
+                        )
+                    }
+
+                    "add_balance" -> {
+                        AddBalanceScreen(
+                            onBackClick = { currentScreen.value = "home" }
+                        )
+                    }
+
+                    "add_nominee_cards" -> {
+                        AddNomineeCardsScreen(
+                            onAddNomineeClick = {
+                                currentScreen.value = "nominee_details"
+                            },
+                            onAddFamilyMemberClick = {
+                                currentScreen.value = "family_member_details"
+                            },
+                            onShareLocationClick = {
+                                currentScreen.value = "share_location"
+                            },
+                            onSkipClick = {
+                                currentScreen.value = "home"
+                            }
+                        )
+                    }
+
+                    "wallet_settings" -> {
+                        WalletSettingsScreen(
+                            onBackClick = { currentScreen.value = "home" },
+                            onFAQsClick = { currentScreen.value = "legal_support" }
+                        )
+                    }
+
+                    "legal_support" -> {
+                        LegalAndSupportScreen(
+                            onReadFullTermsClick = { /* Handle read full terms */ },
+                            onViewPrivacyPolicyClick = { /* Handle view privacy policy */ },
+                            onContactSupportClick = { /* Handle contact support */ },
+                            onBrowseFAQsClick = { /* Handle browse FAQs */ },
+                            onHomeClick = { currentScreen.value = "home" },
+                            onAcceptTermsClick = { currentScreen.value = "home" }
+                        )
+                    }
+
+                    "qr_code_scanner" -> {
+                        QRCodeScannerScreen(
+                            onQRCodeDetected = { qrCode ->
+                                // Handle QR code detection
+                                currentScreen.value = "home"
+                            }
+                        )
+                    }
+
+                    "government_fundraisers" -> {
+                        GovernmentFundraisersScreen(
+                            onBackClick = { currentScreen.value = "home" },
+                            onFinish = { currentScreen.value = "home" }
                         )
                     }
 

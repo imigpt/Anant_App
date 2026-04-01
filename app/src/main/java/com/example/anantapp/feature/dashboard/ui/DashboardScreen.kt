@@ -6,7 +6,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.outlined.BarChart
+import androidx.compose.material.icons.outlined.AttachMoney
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Person
@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.anantapp.presentation.screen.BalanceScreen
+import com.example.anantapp.feature.fundraiser.presentation.screens.SelectFundraiserCategoryScreen
 
 @Composable
 fun DashboardScreen(
@@ -59,10 +60,10 @@ fun DashboardScreen(
                         }
                     )
 
-                    // Analytics/Chart
+                    // Fundraiser
                     NavigationItemDashboard(
-                        selectedIcon = Icons.Outlined.BarChart,
-                        unselectedIcon = Icons.Outlined.BarChart,
+                        selectedIcon = Icons.Outlined.AttachMoney,
+                        unselectedIcon = Icons.Outlined.AttachMoney,
                         isSelected = selectedItemIndex == 1,
                         onClick = {
                             selectedItemIndex = 1
@@ -108,8 +109,12 @@ fun DashboardScreen(
                     onNotificationClick = onNotificationClick,
                     onProfileClick = onProfileClick
                 )
-                // Tabs 1, 2, and 3 are left empty to show the blank white screen for now
-                1 -> {}
+                1 -> SelectFundraiserCategoryScreen(
+                    onBackClick = { selectedItemIndex = 0 },
+                    onNextClick = { selectedCategory, customTitle ->
+                        // Handle next action for fundraiser
+                    }
+                )
                 2 -> {}
                 3 -> {}
             }

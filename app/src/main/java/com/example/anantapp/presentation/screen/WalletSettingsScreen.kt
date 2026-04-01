@@ -43,7 +43,8 @@ val PurpleToPinkGradient = Brush.verticalGradient(
 
 @Composable
 fun WalletSettingsScreen(
-    onBackClick: () -> Unit = {}
+    onBackClick: () -> Unit = {},
+    onFAQsClick: () -> Unit = {}
 ) {
     // Standard full-screen background
     Column(
@@ -108,7 +109,7 @@ fun WalletSettingsScreen(
             SettingMenuItem(Icons.Default.AccountBalanceWallet, "Withdrawal Rule")
             SettingMenuItem(Icons.Default.AccountCircle, "User Settings")
             SettingMenuItem(Icons.Default.PhoneInTalk, "Service Center")
-            SettingMenuItem(Icons.AutoMirrored.Filled.HelpOutline, "FAQ’s")
+            SettingMenuItem(Icons.AutoMirrored.Filled.HelpOutline, "FAQ's", onClick = onFAQsClick)
         }
     }
 }

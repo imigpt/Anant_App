@@ -49,7 +49,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.anantapp.feature.verify.presentation.viewmodel.DeclareInsuranceViewModel
-
+//import com.example.anantapp.feature.verify.presentation.viewmodel.DeclareInsuranceViewModel
+import com.example.anantapp.presentation.screen.DeclareInsuranceDetailsScreen
 private val OrangeGradient = Color(0xFFFF7A00)
 private val MainBackground = Color(0xFFF7F7F7)
 private val TextPrimary = Color(0xFF000000)

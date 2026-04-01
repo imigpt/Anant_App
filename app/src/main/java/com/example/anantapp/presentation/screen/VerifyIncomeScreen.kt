@@ -42,6 +42,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.anantapp.feature.verify.presentation.screen.VerifyIncomeScreen
 
 // Reusable gradients based on the image
 private val FieldGradient = Brush.horizontalGradient(
@@ -54,7 +55,8 @@ private val SubmitBorderGradient = Brush.horizontalGradient(
 @Composable
 fun VerifyIncomeScreen(
     onSkip: () -> Unit = {},
-    onSubmit: () -> Unit = {}
+    onSubmitClick: () -> Unit = {},
+    onSubmit: () -> Unit
 ) {
     var showAddNomineeScreen by remember { mutableStateOf(false) }
 
@@ -76,15 +78,13 @@ fun VerifyIncomeScreen(
             .fillMaxSize()
             .background(Color(0xFFF7F7F7))
     ) {
-        // Soft gradient background blobs (not blur)
+        // Soft gradient background blobs
         Canvas(modifier = Modifier.fillMaxSize()) {
-            // Top Right Blob
             drawCircle(
                 color = Color(0xFFFF9800).copy(alpha = 0.6f),
                 center = Offset(size.width - 50f, 150f),
                 radius = 250f
             )
-            // Bottom Left Blob
             drawCircle(
                 color = Color(0xFFFF9800).copy(alpha = 0.6f),
                 center = Offset(100f, size.height - 150f),
@@ -92,7 +92,6 @@ fun VerifyIncomeScreen(
             )
         }
 
-        // Main Card Container with Glassmorphism
         Card(
             modifier = Modifier
                 .fillMaxSize()
@@ -110,7 +109,7 @@ fun VerifyIncomeScreen(
                 ),
             shape = RoundedCornerShape(24.dp),
             colors = CardDefaults.cardColors(
-                containerColor = Color.White.copy(alpha = 0.75f) // Semi-transparent for glassmorphism
+                containerColor = Color.White.copy(alpha = 0.75f)
             )
         ) {
             Crossfade(targetState = showAddNomineeScreen, label = "ScreenTransition") { showingNominee ->
@@ -125,7 +124,7 @@ fun VerifyIncomeScreen(
                         NomineeScreenContent(
                             onBackClick = { showAddNomineeScreen = false },
                             onSkip = onSkip,
-                            onSubmit = onSubmit,
+                            onSubmitClick = onSubmitClick,
                             fullName = fullName,
                             onFullNameChange = { fullName = it },
                             dob = dob,
@@ -140,7 +139,7 @@ fun VerifyIncomeScreen(
                     } else {
                         MainIncomeContent(
                             onSkip = onSkip,
-                            onSubmit = onSubmit,
+                            onSubmitClick = onSubmitClick,
                             onAddNomineeClick = { showAddNomineeScreen = true },
                             grossSalary = grossSalary,
                             onGrossSalaryChange = { grossSalary = it },
@@ -161,7 +160,7 @@ fun VerifyIncomeScreen(
 @Composable
 fun MainIncomeContent(
     onSkip: () -> Unit,
-    onSubmit: () -> Unit,
+    onSubmitClick: () -> Unit,
     onAddNomineeClick: () -> Unit,
     grossSalary: String,
     onGrossSalaryChange: (String) -> Unit,
@@ -172,7 +171,6 @@ fun MainIncomeContent(
     ifscCode: String,
     onIfscCodeChange: (String) -> Unit
 ) {
-    // Top Row: Skip Button
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.End
@@ -200,7 +198,6 @@ fun MainIncomeContent(
 
     Spacer(modifier = Modifier.height(24.dp))
 
-    // Central Rupee Icon
     Box(
         modifier = Modifier
             .size(80.dp)
@@ -218,7 +215,6 @@ fun MainIncomeContent(
 
     Spacer(modifier = Modifier.height(16.dp))
 
-    // Title
     Text(
         text = "Verify Income",
         fontSize = 24.sp,
@@ -229,14 +225,13 @@ fun MainIncomeContent(
 
     Spacer(modifier = Modifier.height(32.dp))
 
-    // Input Fields
     Column(
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         IncomeGradientInputField(
             leadingIcon = Icons.Outlined.InsertChartOutlined,
-            hint = "Gross salary anually",
+            hint = "Gross salary annually",
             value = grossSalary,
             onValueChange = onGrossSalaryChange
         )
@@ -259,7 +254,6 @@ fun MainIncomeContent(
             onValueChange = onIfscCodeChange
         )
 
-        // Special "Add Nominee" Button
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -296,7 +290,7 @@ fun MainIncomeContent(
                 )
                 Spacer(modifier = Modifier.weight(1f))
                 Icon(
-                    imageVector = Icons.Default.ArrowOutward, // Diagonal arrow pointing up-right
+                    imageVector = Icons.Default.ArrowOutward,
                     contentDescription = "Go",
                     modifier = Modifier
                         .size(20.dp)
@@ -309,16 +303,15 @@ fun MainIncomeContent(
 
     Spacer(modifier = Modifier.height(48.dp))
 
-    // Gradient Bordered Submit Button
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .height(56.dp)
             .shadow(4.dp, RoundedCornerShape(28.dp))
             .background(brush = SubmitBorderGradient, shape = RoundedCornerShape(28.dp))
-            .padding(2.dp) // Border thickness
+            .padding(2.dp)
             .background(Color.White, RoundedCornerShape(26.dp))
-            .clickable { onSubmit() },
+            .clickable { onSubmitClick() },
         contentAlignment = Alignment.Center
     ) {
         Text(
@@ -337,7 +330,7 @@ fun MainIncomeContent(
 fun NomineeScreenContent(
     onBackClick: () -> Unit,
     onSkip: () -> Unit,
-    onSubmit: () -> Unit,
+    onSubmitClick: () -> Unit,
     fullName: String,
     onFullNameChange: (String) -> Unit,
     dob: String,
@@ -349,7 +342,6 @@ fun NomineeScreenContent(
     shareOfFunds: String,
     onShareOfFundsChange: (String) -> Unit
 ) {
-    // Top Row: Back & Skip Buttons
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -397,7 +389,6 @@ fun NomineeScreenContent(
 
     Spacer(modifier = Modifier.height(24.dp))
 
-    // Bold Rupee Icon
     Box(
         modifier = Modifier
             .size(80.dp)
@@ -415,7 +406,6 @@ fun NomineeScreenContent(
 
     Spacer(modifier = Modifier.height(16.dp))
 
-    // Nominee Title
     Text(
         text = "Add Nominee",
         fontSize = 24.sp,
@@ -426,7 +416,6 @@ fun NomineeScreenContent(
 
     Spacer(modifier = Modifier.height(32.dp))
 
-    // Nominee Input Fields
     Column(
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -465,7 +454,6 @@ fun NomineeScreenContent(
 
     Spacer(modifier = Modifier.height(48.dp))
 
-    // Submit Button
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -474,7 +462,7 @@ fun NomineeScreenContent(
             .background(brush = SubmitBorderGradient, shape = RoundedCornerShape(28.dp))
             .padding(2.dp)
             .background(Color.White, RoundedCornerShape(26.dp))
-            .clickable { onSubmit() },
+            .clickable { onSubmitClick() },
         contentAlignment = Alignment.Center
     ) {
         Text(
@@ -503,7 +491,7 @@ private fun IncomeGradientInputField(
             .shadow(
                 elevation = 6.dp,
                 shape = RoundedCornerShape(28.dp),
-                spotColor = Color(0xFFFF9800).copy(alpha = 0.5f) // Warm drop shadow
+                spotColor = Color(0xFFFF9800).copy(alpha = 0.5f)
             )
             .background(
                 brush = FieldGradient,
@@ -516,7 +504,6 @@ private fun IncomeGradientInputField(
                 .padding(horizontal = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // White circular icon background
             Box(
                 modifier = Modifier
                     .size(40.dp)
@@ -533,7 +520,6 @@ private fun IncomeGradientInputField(
 
             Spacer(modifier = Modifier.width(16.dp))
 
-            // Text input over the gradient
             Box(
                 modifier = Modifier.weight(1f),
                 contentAlignment = Alignment.CenterStart
@@ -575,7 +561,7 @@ fun PrivacyFooter() {
         Icon(
             imageVector = Icons.Outlined.Lock,
             contentDescription = "Privacy Lock",
-            tint = Color(0xFFFFB74D), // Light orange tint to match image
+            tint = Color(0xFFFFB74D),
             modifier = Modifier.size(14.dp)
         )
         Spacer(modifier = Modifier.width(6.dp))
