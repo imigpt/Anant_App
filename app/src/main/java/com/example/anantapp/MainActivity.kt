@@ -15,52 +15,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.anantapp.presentation.screen.AddBalanceScreen
-import com.example.anantapp.presentation.screen.BalanceScreen
-import com.example.anantapp.presentation.screen.DashboardScreen
-import com.example.anantapp.presentation.screen.DeclareInsuranceDetailsScreen
-import com.example.anantapp.presentation.screen.DeliveryAddressScreen
-import com.example.anantapp.presentation.screen.OrderSuccessScreen
-import com.example.anantapp.presentation.screen.OrderStatusScreen
-import com.example.anantapp.presentation.screen.ViewQRCodeScreen
-import com.example.anantapp.presentation.screen.GenerateQRCodeInfoScreen
-import com.example.anantapp.presentation.screen.DonationHistoryScreen
-import com.example.anantapp.presentation.screen.DonorScreen
-import com.example.anantapp.presentation.screen.EnableLocationScreen
-import com.example.anantapp.presentation.screen.FamilyDetailsScreen
-import com.example.anantapp.presentation.screen.GenerateQRCodeScreen
-import com.example.anantapp.presentation.screen.GovernmentFundraisersScreen
-import com.example.anantapp.presentation.screen.HomeScreen
-import com.example.anantapp.presentation.screen.PaymentMethodScreen
-import com.example.anantapp.presentation.screen.PreviewAndSubmitScreen
-import com.example.anantapp.presentation.screen.SelectFundraiserCategoryScreen
-import com.example.anantapp.presentation.screen.CreateFundraiserScreen
-import com.example.anantapp.presentation.screen.TargetAndPaymentsScreen
-import com.example.anantapp.presentation.screen.ProfileSettingsScreen
-import com.example.anantapp.presentation.screen.FamilyInformationScreen
-import com.example.anantapp.presentation.screen.ContactInformationScreen
-import com.example.anantapp.presentation.screen.TransactionScreen
-import com.example.anantapp.presentation.screen.UserDetailsScreen
-import com.example.anantapp.presentation.screen.VerifyIncomeScreen
-import com.example.anantapp.presentation.screen.WalletSettingsScreen
+import androidx.activity.compose.BackHandler
+
+// Presentation Screens
+import com.example.anantapp.presentation.screen.*
+// UI Screens
 import com.example.anantapp.ui.login.LoginScreen
 import com.example.anantapp.ui.onboarding.OnboardingScreen
 import com.example.anantapp.ui.theme.AnantAppTheme
-import com.example.anantapp.ui.screens.QRCodeScannerScreen
-import com.example.anantapp.ui.screens.AddNomineeCardsScreen
-import com.example.anantapp.ui.screens.LegalAndSupportScreen
-import com.example.anantapp.ui.screens.NomineeDetailsScreen
-import com.example.anantapp.ui.screens.NomineeOTPVerificationScreen
-import com.example.anantapp.ui.screens.FamilyMemberDetailsScreen
-import com.example.anantapp.ui.verify.PhotoUploadScreen
-import com.example.anantapp.presentation.screen.ShareRealTimeLocationScreen
-import com.example.anantapp.presentation.screen.ManageFamilyMembersScreen
-import com.example.anantapp.presentation.screen.LocationSharedSuccessScreen
-import com.example.anantapp.presentation.screen.LiveLocationMapScreen
-import com.example.anantapp.ui.verify.VerifyAddressScreen
-import com.example.anantapp.ui.verify.VerifyBankScreen
-import com.example.anantapp.ui.verify.VerifyScreen
-import androidx.activity.compose.BackHandler
+import com.example.anantapp.ui.screens.*
+import com.example.anantapp.ui.verify.*
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -69,7 +33,6 @@ class MainActivity : ComponentActivity() {
         setContent {
             AnantAppTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    // innerPadding is passed as a modifier here
                     MainContent(modifier = Modifier.padding(innerPadding))
                 }
             }
@@ -80,719 +43,393 @@ class MainActivity : ComponentActivity() {
 @Composable
 private fun MainContent(modifier: Modifier = Modifier) {
     val context = LocalContext.current
-    val orderSuccessComplete = remember { mutableStateOf(true) }
-    val orderStatusComplete = remember { mutableStateOf(true) }
-    val viewQRCodeComplete = remember { mutableStateOf(true) }
-    val generateQRInfoComplete = remember { mutableStateOf(true) }
-    val generateQRCodeComplete = remember { mutableStateOf(true) }
-    val userDetailsComplete = remember { mutableStateOf(true) }
-    val deliveryAddressComplete = remember { mutableStateOf(true) }
-    val onboardingComplete = remember { mutableStateOf(true) }
-    val loginComplete = remember { mutableStateOf(true) }
-    val documentVerified = remember { mutableStateOf(true) }
-    val bankVerified = remember { mutableStateOf(true) }
-    val addressVerified = remember { mutableStateOf(true) }
-    val photoUploaded = remember { mutableStateOf(true) }
-    val locationVerified = remember { mutableStateOf(true) }
-    val familyDetailsComplete = remember { mutableStateOf(true) }
-    val insuranceDetailsComplete = remember { mutableStateOf(true) }
-    val verifyIncomeComplete = remember { mutableStateOf(true) }
-    val governmentFundraisersComplete = remember { mutableStateOf(true) }
-    val currentScreen = remember { mutableStateOf("share_location") } // Start with Share Real Time Location screen
-    val locationShareSuccess = remember { mutableStateOf(false) } // Track if location was shared
-    val viewMapOpen = remember { mutableStateOf(false) } // Track if viewing map
-    val currentSubScreen = remember { mutableStateOf("") } // For sub-screens within nominee flow
-    val currentOTPType = remember { mutableStateOf("nominee") } // Track OTP screen type: "nominee" or "family_member"
+
+    // Navigation and Flow States
+    val currentScreen = remember { mutableStateOf("login") }
+    val sosScreenOpen = remember { mutableStateOf(false) }
+    val sosHistoryOpen = remember { mutableStateOf(false) }
+
+    // Sub-states for specific screens
+    val currentSubScreen = remember { mutableStateOf("") }
+    val currentOTPType = remember { mutableStateOf("nominee") }
+    val locationShareSuccess = remember { mutableStateOf(false) }
 
     // Handle system back button navigation
     BackHandler(enabled = true) {
-        when (currentScreen.value) {
-            "home" -> {
-                // App will close when user presses back from home
+        when {
+            sosHistoryOpen.value -> sosHistoryOpen.value = false
+            sosScreenOpen.value -> sosScreenOpen.value = false
+            currentSubScreen.value.isNotEmpty() -> currentSubScreen.value = "" // Back from sub-screens like OTP
+            currentScreen.value == "home" -> {
                 @Suppress("DEPRECATION")
                 (context as? ComponentActivity)?.finish()
             }
-            "donor" -> currentScreen.value = "home"
-            "donation_history" -> currentScreen.value = "home"
-            "payment" -> currentScreen.value = "donor"
-            "profile_settings" -> currentScreen.value = "home"
-            "transaction" -> currentScreen.value = "home"
-            "share_location" -> {
-                if (locationShareSuccess.value && viewMapOpen.value) {
-                    viewMapOpen.value = false
-                } else if (locationShareSuccess.value) {
-                    currentScreen.value = "add_nominee_cards"
-                    locationShareSuccess.value = false
-                } else {
-                    currentScreen.value = "add_nominee_cards"
-                }
-            }
-            "add_nominee_cards" -> currentScreen.value = "share_location"
-            "nominee_details" -> currentScreen.value = "add_nominee_cards"
-            "family_member_details" -> currentScreen.value = "add_nominee_cards"
-            "manage_family_members" -> currentScreen.value = "share_location"
-            else -> {
-                // Default behavior
+            // Onboarding reverse flow
+            currentScreen.value == "insurance" -> currentScreen.value = "enable_location"
+            currentScreen.value == "enable_location" -> currentScreen.value = "photo_upload"
+            currentScreen.value == "photo_upload" -> currentScreen.value = "verify_address"
+            currentScreen.value == "verify_address" -> currentScreen.value = "verify_income"
+            currentScreen.value == "verify_income" -> currentScreen.value = "family_details"
+            currentScreen.value == "family_details" -> currentScreen.value = "verify_bank"
+            currentScreen.value == "verify_bank" -> currentScreen.value = "verify_document"
+            currentScreen.value == "verify_document" -> currentScreen.value = "onboarding"
+            currentScreen.value == "onboarding" -> currentScreen.value = "login"
+            currentScreen.value == "login" -> {
                 @Suppress("DEPRECATION")
                 (context as? ComponentActivity)?.finish()
             }
+            // Default for all other app screens: go back to home
+            else -> currentScreen.value = "home"
         }
     }
 
-    // Wrap the routing logic in a Box that uses the passed modifier.
-    // This ensures every screen respects the safe-area padding from the Scaffold.
     Box(modifier = modifier) {
-        when {
-            // Show Share Real Time Location first if currentScreen is share_location
-            currentScreen.value == "share_location" && locationShareSuccess.value && viewMapOpen.value -> {
-                LiveLocationMapScreen(
-                    onBackClick = {
-                        viewMapOpen.value = false
-                        locationShareSuccess.value = true
-                    },
-                    onNavigateClick = {
-                        // Handle navigate to location
-                    },
-                    onShowMyLocationClick = {
-                        // Handle show my location
-                    },
-                    onShowAllMembersClick = {
-                        // Handle show all members
-                    }
-                )
-            }
-
-            currentScreen.value == "share_location" && locationShareSuccess.value && !viewMapOpen.value -> {
-                LocationSharedSuccessScreen(
-                    onBackClick = {
-                        currentScreen.value = "add_nominee_cards"
-                        locationShareSuccess.value = false
-                    },
-                    onManageAccessClick = {
-                        // Handle manage access
-                    },
-                    onViewOnMapClick = {
-                        viewMapOpen.value = true
-                    },
-                    onDoneClick = {
-                        currentScreen.value = "home"
-                        locationShareSuccess.value = false
-                    }
-                )
-            }
-
-            currentScreen.value == "share_location" && (
-                    orderSuccessComplete.value &&
-                            orderStatusComplete.value &&
-                            viewQRCodeComplete.value &&
-                            generateQRInfoComplete.value &&
-                            generateQRCodeComplete.value &&
-                            userDetailsComplete.value &&
-                            deliveryAddressComplete.value &&
-                            onboardingComplete.value &&
-                            loginComplete.value &&
-                            documentVerified.value &&
-                            bankVerified.value &&
-                            addressVerified.value &&
-                            photoUploaded.value &&
-                            locationVerified.value &&
-                            familyDetailsComplete.value &&
-                            insuranceDetailsComplete.value &&
-                            verifyIncomeComplete.value &&
-                            governmentFundraisersComplete.value
-                    ) && !locationShareSuccess.value -> {
-                ShareRealTimeLocationScreen(
-                    onBackClick = {
-                        currentScreen.value = "add_nominee_cards"
-                    },
-                    onManageFamilyClick = {
-                        // Navigate to manage family members
-                        currentScreen.value = "manage_family_members"
-                    },
-                    onShareLocationSuccess = {
-                        // Navigate to success screen
-                        locationShareSuccess.value = true
-                    }
-                )
-            }
-
-            currentScreen.value == "add_nominee_cards" && (
-                    orderSuccessComplete.value &&
-                            orderStatusComplete.value &&
-                            viewQRCodeComplete.value &&
-                            generateQRInfoComplete.value &&
-                            generateQRCodeComplete.value &&
-                            userDetailsComplete.value &&
-                            deliveryAddressComplete.value &&
-                            onboardingComplete.value &&
-                            loginComplete.value &&
-                            documentVerified.value &&
-                            bankVerified.value &&
-                            addressVerified.value &&
-                            photoUploaded.value &&
-                            locationVerified.value &&
-                            familyDetailsComplete.value &&
-                            insuranceDetailsComplete.value &&
-                            verifyIncomeComplete.value &&
-                            governmentFundraisersComplete.value
-                    ) -> {
-                AddNomineeCardsScreen(
-                    onAddNomineeClick = {
-                        // Navigate to Nominee Details
-                        currentScreen.value = "nominee_details"
-                    },
-                    onAddFamilyMemberClick = {
-                        // Navigate to Family Member Details
-                        currentScreen.value = "family_member_details"
-                    },
-                    onShareLocationClick = {
-                        // Navigate to Share Location
-                        currentScreen.value = "share_location"
-                    },
-                    onSkipClick = {
-                        // Handle skip
-                        currentScreen.value = "home"
-                    }
-                )
-            }
-
-            !orderSuccessComplete.value -> {
-                OrderSuccessScreen(
-                    onDownloadPDFClick = {
-                        // Handle PDF download
-                    },
-                    onOrderStatusClick = {
-                        orderSuccessComplete.value = true
-                    },
-                    onHomeClick = {
-                        orderSuccessComplete.value = true
-                    }
-                )
-            }
-
-            !orderStatusComplete.value -> {
-                OrderStatusScreen(
-                    onTrackOnMapClick = {
-                        // Handle track on map
-                    },
-                    onDownloadQRClick = {
-                        // Handle download QR
-                    },
-                    onViewQRCodeClick = {
-                        viewQRCodeComplete.value = true
-                    },
-                    onHomeClick = {
-                        currentScreen.value = "home"
-                        orderStatusComplete.value = true
-                    }
-                )
-            }
-
-            !viewQRCodeComplete.value -> {
-                ViewQRCodeScreen(
-                    onShareQRClick = {
-                        generateQRInfoComplete.value = true
-                    },
-                    onDownloadQRClick = {
-                        generateQRInfoComplete.value = true
-                    }
-                )
-            }
-
-            !generateQRInfoComplete.value -> {
-                GenerateQRCodeInfoScreen(
-                    onShareQRClick = {
-                        // Handle share QR
-                    },
-                    onDownloadQRClick = {
-                        // Handle download QR
-                    }
-                )
-            }
-
-            !generateQRCodeComplete.value -> {
-                GenerateQRCodeScreen(
-                    onBackClick = {
-                        // App initialization - no screen to go back to
-                    },
-                    onNextClick = { formState ->
-                        // QR Code form submitted - proceed to user details screen
-                        generateQRCodeComplete.value = true
-                    }
-                )
-            }
-
-            !userDetailsComplete.value -> {
-                UserDetailsScreen(
-                    onBackClick = {
-                        generateQRCodeComplete.value = false
-                    },
-                    onNextClick = { formState ->
-                        // User details form submitted - proceed to delivery address screen
-                        userDetailsComplete.value = true
-                    }
-                )
-            }
-
-            !deliveryAddressComplete.value -> {
-                DeliveryAddressScreen(
-                    onBackClick = {
-                        userDetailsComplete.value = false
-                    },
-                    onNextClick = { formState ->
-                        // Delivery address form submitted - proceed to next flow
-                        deliveryAddressComplete.value = true
-                    }
-                )
-            }
-
-            !onboardingComplete.value -> {
-                OnboardingScreen(
-                    onOnboardingComplete = {
-                        onboardingComplete.value = true
-                    }
-                )
-            }
-
-            !loginComplete.value -> {
-                LoginScreen(
-                    viewModel = viewModel(),
-                    onLoginSuccess = {
-                        loginComplete.value = true
-                    }
-                )
-            }
-
-            !documentVerified.value -> {
-                VerifyScreen(
-                    viewModel = viewModel(),
-                    onSkipClick = {
-                        loginComplete.value = false
-                    },
-                    onVerifySuccess = {
-                        documentVerified.value = true
-                    }
-                )
-            }
-
-            !bankVerified.value -> {
-                VerifyBankScreen(
-                    viewModel = viewModel(),
-                    onSkipClick = {
-                        documentVerified.value = false
-                    },
-                    onSuccess = {
-                        bankVerified.value = true
-                    }
-                )
-            }
-
-            !addressVerified.value -> {
-                VerifyAddressScreen(
-                    viewModel = viewModel(),
-                    onSkipClick = {
-                        bankVerified.value = false
-                    },
-                    onSuccess = {
-                        addressVerified.value = true
-                    }
-                )
-            }
-
-            !photoUploaded.value -> {
-                PhotoUploadScreen(
-                    viewModel = viewModel(),
-                    onSkipClick = {
-                        addressVerified.value = false
-                    },
-                    onSuccess = {
-                        photoUploaded.value = true
-                    }
-                )
-            }
-
-            !locationVerified.value -> {
-                EnableLocationScreen(
-                    onSkip = {
-                        photoUploaded.value = false
-                    },
-                    onSuccess = {
-                        locationVerified.value = true
-                    }
-                )
-            }
-
-            !familyDetailsComplete.value -> {
-                FamilyDetailsScreen(
-                    onSkip = {
-                        locationVerified.value = false
-                    },
-                    onSubmit = {
-                        familyDetailsComplete.value = true
-                    }
-                )
-            }
-
-            !insuranceDetailsComplete.value -> {
-                DeclareInsuranceDetailsScreen(
-                    onSkip = {
-                        familyDetailsComplete.value = false
-                    },
-                    onSubmit = {
-                        insuranceDetailsComplete.value = true
-                    }
-                )
-            }
-
-            !verifyIncomeComplete.value -> {
-                VerifyIncomeScreen {
-                    insuranceDetailsComplete.value = false
+        // --- Overlay Screens ---
+        if (sosHistoryOpen.value) {
+            SOSHistoryScreen(
+                onBackClick = { sosHistoryOpen.value = false },
+                onViewMapClick = { sosId -> /* Handle view on map */ },
+                onDownloadPDFClick = { sosId -> /* Handle PDF download */ }
+            )
+        } else if (sosScreenOpen.value) {
+            SOSScreen(
+                onSOSClick = { sosScreenOpen.value = false },
+                onEmergencyTypeClick = { emergencyType -> /* Handle emergency type */ },
+                onCheckHistoryClick = {
+                    sosScreenOpen.value = false
+                    sosHistoryOpen.value = true
+                },
+                onBackClick = { sosScreenOpen.value = false }
+            )
+        } else {
+            // --- Main App Navigation ---
+            when (currentScreen.value) {
+                // 1. Onboarding Workflow
+                "login" -> {
+                    LoginScreen(
+                        viewModel = viewModel(),
+                        onLoginSuccess = { currentScreen.value = "onboarding" }
+                    )
                 }
-            }
+                "onboarding" -> {
+                    OnboardingScreen(
+                        onOnboardingComplete = { currentScreen.value = "verify_document" }
+                    )
+                }
+                "verify_document" -> {
+                    VerifyScreen(
+                        viewModel = viewModel(),
+                        onSkipClick = { currentScreen.value = "verify_bank" },
+                        onVerifySuccess = { currentScreen.value = "verify_bank" }
+                    )
+                }
+                "verify_bank" -> {
+                    VerifyBankScreen(
+                        viewModel = viewModel(),
+                        onSkipClick = { currentScreen.value = "family_details" },
+                        onSuccess = { currentScreen.value = "family_details" }
+                    )
+                }
+                "family_details" -> {
+                    FamilyDetailsScreen(
+                        onSkip = { currentScreen.value = "verify_income" },
+                        onSubmit = { currentScreen.value = "verify_income" }
+                    )
+                }
+                "verify_income" -> {
+                    VerifyIncomeScreen(
+                        onSkip = { currentScreen.value = "verify_address" },
+                        onSubmitClick = { currentScreen.value = "verify_address" },
+                        onSubmit = { currentScreen.value = "verify_address" }
+                    )
+                }
+                "verify_address" -> {
+                    VerifyAddressScreen(
+                        viewModel = viewModel(),
+                        onSkipClick = { currentScreen.value = "photo_upload" },
+                        onSuccess = { currentScreen.value = "photo_upload" }
+                    )
+                }
+                "photo_upload" -> {
+                    PhotoUploadScreen(
+                        viewModel = viewModel(),
+                        onSkipClick = { currentScreen.value = "enable_location" },
+                        onSuccess = { currentScreen.value = "enable_location" }
+                    )
+                }
+                "enable_location" -> {
+                    EnableLocationScreen(
+                        onSkip = { currentScreen.value = "insurance" },
+                        onSuccess = { currentScreen.value = "insurance" }
+                    )
+                }
+                "insurance" -> {
+                    DeclareInsuranceDetailsScreen(
+                        onSkip = { currentScreen.value = "home" },
+                        onSubmit = { currentScreen.value = "home" }
+                    )
+                }
 
-            !governmentFundraisersComplete.value -> {
-                GovernmentFundraisersScreen(
-                    onBackClick = {
-                        verifyIncomeComplete.value = false
-                    },
-                    onFinish = {
-                        governmentFundraisersComplete.value = true
-                    }
-                )
-            }
+                // 2. Main App Screens
+                "home" -> {
+                    HomeScreen(
+                        onDonorClick = { currentScreen.value = "donation_history" },
+                        onHistoryClick = { currentScreen.value = "transaction" },
+                        onHomeClick = { currentScreen.value = "home" },
+                        onAnalyticsClick = { currentScreen.value = "dashboard" },
+                        onNotificationClick = { /* Handle notifications */ },
+                        onProfileClick = { currentScreen.value = "profile_settings" },
+                        onTransferClick = { currentScreen.value = "add_balance" },
+                        onNomineeClick = { currentScreen.value = "add_nominee_cards" },
+                        onAddDonationClick = { currentScreen.value = "donor" },
+                        onSettingsClick = { currentScreen.value = "wallet_settings" },
+                        onQRCodeScannerClick = { currentScreen.value = "qr_scanner" },
+                        onGenerateQRCodeClick = { currentScreen.value = "qr_generate" },
+                        onGovernmentFundraisersClick = { currentScreen.value = "government_fundraisers" },
+                        onSOSClick = { sosScreenOpen.value = true }
+                    )
+                }
+                "dashboard" -> {
+                    DashboardScreen(
+                        onHomeClick = { currentScreen.value = "home" },
+                        onAnalyticsClick = { currentScreen.value = "dashboard" },
+                        onNotificationClick = { /* Handle notifications */ },
+                        onProfileClick = { currentScreen.value = "profile_settings" }
+                    )
+                }
+                "balance" -> {
+                    BalanceScreen(
+                        onHomeClick = { currentScreen.value = "home" },
+                        onAnalyticsClick = { currentScreen.value = "dashboard" },
+                        onNotificationClick = { /* Handle notifications */ },
+                        onProfileClick = { currentScreen.value = "profile_settings" }
+                    )
+                }
 
-            else -> {
-                // All verifications complete - navigate based on current screen
-                when (currentScreen.value) {
-                    "qr_scanner" -> {
-                        QRCodeScannerScreen(
-                            onQRCodeDetected = { qrCode ->
-                                // Handle detected QR code
-                                if (qrCode.isNotEmpty()) {
-                                    currentScreen.value = "home"
-                                }
-                            }
-                        )
-                    }
+                // 3. Fundraising & Donation Flow
+                "fundraiser", "dashboard_fundraiser" -> {
+                    SelectFundraiserCategoryScreen(
+                        viewModel = viewModel(),
+                        onNextClick = { category, customTitle -> currentScreen.value = "create_fundraiser" },
+                        onBackClick = { currentScreen.value = "home" }
+                    )
+                }
+                "create_fundraiser" -> {
+                    CreateFundraiserScreen(
+                        viewModel = viewModel(),
+                        onBackClick = { currentScreen.value = "fundraiser" },
+                        onDraftSaved = { currentScreen.value = "home" },
+                        onFundraiserCreated = { currentScreen.value = "target_payments" },
+                        onNavigateToTargetPayments = { currentScreen.value = "target_payments" }
+                    )
+                }
+                "target_payments" -> {
+                    TargetAndPaymentsScreen(
+                        viewModel = viewModel(),
+                        onBackClick = { currentScreen.value = "create_fundraiser" },
+                        onDraftSaved = { currentScreen.value = "home" },
+                        onFundraiserPublished = { currentScreen.value = "preview_and_submit" }
+                    )
+                }
+                "preview_and_submit" -> {
+                    PreviewAndSubmitScreen(
+                        viewModel = viewModel(),
+                        onBackClick = { currentScreen.value = "target_payments" },
+                        onDraftSaved = { currentScreen.value = "home" },
+                        onSubmitSuccess = { currentScreen.value = "home" }
+                    )
+                }
+                "donor" -> {
+                    DonorScreen(
+                        onBackClick = { currentScreen.value = "home" },
+                        onPaymentClick = { currentScreen.value = "payment" }
+                    )
+                }
+                "payment" -> {
+                    PaymentMethodScreen(
+                        onBackClick = { currentScreen.value = "donor" },
+                        onPaymentComplete = { currentScreen.value = "home" }
+                    )
+                }
+                "donation_history" -> DonationHistoryScreen(onBackClick = { currentScreen.value = "home" })
+                "government_fundraisers" -> {
+                    GovernmentFundraisersScreen(
+                        onBackClick = { currentScreen.value = "home" },
+                        onFinish = { currentScreen.value = "home" }
+                    )
+                }
 
-                    "fundraiser" -> {
-                        SelectFundraiserCategoryScreen(
-                            viewModel = viewModel(),
-                            onNextClick = { category, customTitle ->
-                                currentScreen.value = "create_fundraiser"
-                            },
-                            onBackClick = {
+                // 4. User Profile & Settings Flow
+                "profile_settings" -> {
+                    ProfileSettingsScreen(
+                        onBackClick = { currentScreen.value = "home" },
+                        onContactClick = { currentScreen.value = "contact_information" },
+                        onFamilyClick = { currentScreen.value = "family_information" },
+                        onBankClick = { /* TODO */ },
+                        onInsuranceClick = { /* TODO */ },
+                        onMedicalClick = { /* TODO */ },
+                        onLogoutClick = { currentScreen.value = "login" }
+                    )
+                }
+                "family_information" -> {
+                    FamilyInformationScreen(
+                        onBackClick = { currentScreen.value = "profile_settings" },
+                        onUpdateClick = { currentScreen.value = "profile_settings" }
+                    )
+                }
+                "contact_information" -> {
+                    ContactInformationScreen(
+                        onBackClick = { currentScreen.value = "profile_settings" },
+                        onUpdateClick = { currentScreen.value = "profile_settings" }
+                    )
+                }
+                "wallet_settings" -> {
+                    WalletSettingsScreen(
+                        onBackClick = { currentScreen.value = "home" },
+                        onFAQsClick = { currentScreen.value = "legal_support" }
+                    )
+                }
+                "legal_support" -> {
+                    LegalAndSupportScreen(
+                        onReadFullTermsClick = { },
+                        onViewPrivacyPolicyClick = { },
+                        onContactSupportClick = { },
+                        onBrowseFAQsClick = { },
+                        onHomeClick = { currentScreen.value = "home" },
+                        onAcceptTermsClick = { currentScreen.value = "home" }
+                    )
+                }
+                "transaction" -> TransactionScreen(onBackClick = { currentScreen.value = "home" })
+                "add_balance" -> AddBalanceScreen(onBackClick = { currentScreen.value = "home" })
+
+                // 5. Nominee & Family Sharing Flow
+                "add_nominee_cards" -> {
+                    AddNomineeCardsScreen(
+                        onAddNomineeClick = { currentScreen.value = "nominee_details" },
+                        onAddFamilyMemberClick = { currentScreen.value = "family_member_details" },
+                        onShareLocationClick = { currentScreen.value = "share_location" },
+                        onSkipClick = { currentScreen.value = "home" }
+                    )
+                }
+                "nominee_details" -> {
+                    if (currentSubScreen.value == "otp_verification") {
+                        NomineeOTPVerificationScreen(
+                            screenType = "nominee",
+                            onAddNomineeClick = { currentSubScreen.value = "" },
+                            onSendOTPClick = { },
+                            onVerifyOTPClick = {
                                 currentScreen.value = "home"
-                            }
-                        )
-                    }
-
-                    "create_fundraiser" -> {
-                        CreateFundraiserScreen(
-                            viewModel = viewModel(),
-                            onBackClick = {
-                                currentScreen.value = "fundraiser"
+                                currentSubScreen.value = ""
                             },
-                            onDraftSaved = {
-                                currentScreen.value = "home"
+                            onGoBackClick = { currentSubScreen.value = "" }
+                        )
+                    } else {
+                        NomineeDetailsScreen(
+                            onSubmitClick = {
+                                currentSubScreen.value = "otp_verification"
+                                currentOTPType.value = "nominee"
                             },
-                            onFundraiserCreated = { fundraiserId ->
-                                currentScreen.value = "target_payments"
+                            onGoBackClick = { currentScreen.value = "add_nominee_cards" },
+                            onUploadClick = { onFilesSelected -> onFilesSelected("Aadhaar_Front.pdf", "Aadhaar_Back.pdf") }
+                        )
+                    }
+                }
+                "family_member_details" -> {
+                    if (currentSubScreen.value == "otp_verification") {
+                        NomineeOTPVerificationScreen(
+                            screenType = "family_member",
+                            onAddNomineeClick = { currentSubScreen.value = "" },
+                            onSendOTPClick = { },
+                            onVerifyOTPClick = {
+                                currentScreen.value = "add_nominee_cards"
+                                currentSubScreen.value = ""
                             },
-                            onNavigateToTargetPayments = {
-                                currentScreen.value = "target_payments"
-                            }
+                            onGoBackClick = { currentSubScreen.value = "" }
                         )
-                    }
-
-                    "target_payments" -> {
-                        TargetAndPaymentsScreen(
-                            viewModel = viewModel(),
-                            onBackClick = {
-                                currentScreen.value = "create_fundraiser"
+                    } else {
+                        FamilyMemberDetailsScreen(
+                            onSubmitClick = {
+                                currentSubScreen.value = "otp_verification"
+                                currentOTPType.value = "family_member"
                             },
-                            onDraftSaved = {
-                                currentScreen.value = "home"
-                            },
-                            onFundraiserPublished = {
-                                currentScreen.value = "preview_and_submit"
-                            }
+                            onGoBackClick = { currentScreen.value = "add_nominee_cards" },
+                            onUploadClick = { onFilesSelected -> onFilesSelected("ID_Front.pdf", "ID_Back.pdf") }
                         )
                     }
+                }
+                "share_location" -> {
+                    ShareRealTimeLocationScreen(
+                        onBackClick = { currentScreen.value = "add_nominee_cards" },
+                        onManageFamilyClick = { currentScreen.value = "manage_family_members" },
+                        onShareLocationSuccess = { locationShareSuccess.value = true }
+                    )
+                }
+                "manage_family_members" -> {
+                    ManageFamilyMembersScreen(
+                        onBackClick = { currentScreen.value = "share_location" },
+                        onAddMemberClick = { currentScreen.value = "share_location" },
+                        onEditMemberClick = { _, _ -> currentScreen.value = "share_location" }
+                    )
+                }
 
-                    "preview_and_submit" -> {
-                        PreviewAndSubmitScreen(
-                            viewModel = viewModel(),
-                            onBackClick = {
-                                currentScreen.value = "target_payments"
-                            },
-                            onDraftSaved = {
-                                currentScreen.value = "home"
-                            },
-                            onSubmitSuccess = { fundraiserId ->
-                                currentScreen.value = "home"
-                            }
-                        )
-                    }
+                // 6. QR Code Flows
+                "qr_scanner", "qr_code_scanner" -> {
+                    QRCodeScannerScreen(
+                        onQRCodeDetected = { qrCode -> if (qrCode.isNotEmpty()) currentScreen.value = "home" },
+                        onBackClick = { currentScreen.value = "home" }
+                    )
+                }
+                "qr_generate" -> {
+                    GenerateQRCodeScreen(
+                        onBackClick = { currentScreen.value = "home" },
+                        onNextClick = { currentScreen.value = "delivery_address" }
+                    )
+                }
+                "delivery_address" -> {
+                    DeliveryAddressScreen(
+                        onBackClick = { currentScreen.value = "qr_generate" },
+                        onNextClick = { currentScreen.value = "order_success" }
+                    )
+                }
+                "order_success" -> {
+                    OrderSuccessScreen(
+                        onDownloadPDFClick = { },
+                        onOrderStatusClick = { currentScreen.value = "order_status" },
+                        onHomeClick = { currentScreen.value = "home" }
+                    )
+                }
+                "order_status" -> {
+                    OrderStatusScreen(
+                        onTrackOnMapClick = { },
+                        onDownloadQRClick = { },
+                        onViewQRCodeClick = { currentScreen.value = "view_qr" },
+                        onHomeClick = { currentScreen.value = "home" }
+                    )
+                }
+                "view_qr" -> {
+                    ViewQRCodeScreen(
+                        onShareQRClick = { currentScreen.value = "home" },
+                        onDownloadQRClick = { currentScreen.value = "home" }
+                    )
+                }
 
-                    "home" -> {
-                        HomeScreen(
-                            onDonorClick = { currentScreen.value = "donation_history" },
-                            onHistoryClick = { currentScreen.value = "transaction" },
-                            onHomeClick = { currentScreen.value = "home" },
-                            onAnalyticsClick = { currentScreen.value = "dashboard" },
-                            onNotificationClick = { /* Handle notifications */ },
-                            onProfileClick = { currentScreen.value = "profile_settings" },
-                            onTransferClick = { currentScreen.value = "add_balance" },
-                            onNomineeClick = { currentScreen.value = "add_nominee_cards" },
-                            onAddDonationClick = { currentScreen.value = "donor" },
-                            onSettingsClick = { currentScreen.value = "wallet_settings" },
-                            onQRCodeScannerClick = { currentScreen.value = "qr_code_scanner" },
-                            onGovernmentFundraisersClick = { currentScreen.value = "government_fundraisers" }
-                        )
-                    }
-
-                    "dashboard" -> {
-                        DashboardScreen(
-                            onHomeClick = { currentScreen.value = "home" },
-                            onAnalyticsClick = { currentScreen.value = "dashboard" },
-                            onNotificationClick = { /* Handle notifications */ },
-                            onProfileClick = { currentScreen.value = "profile_settings" }
-                        )
-                    }
-
-                    "balance" -> {
-                        BalanceScreen(
-                            onHomeClick = { currentScreen.value = "home" },
-                            onAnalyticsClick = { currentScreen.value = "dashboard" },
-                            onNotificationClick = { /* Handle notifications */ },
-                            onProfileClick = { currentScreen.value = "profile_settings" }
-                        )
-                    }
-
-                    "donor" -> {
-                        DonorScreen(
-                            onBackClick = { currentScreen.value = "home" },
-                            onPaymentClick = { currentScreen.value = "payment" }
-                        )
-                    }
-
-                    "payment" -> {
-                        PaymentMethodScreen(
-                            onBackClick = { currentScreen.value = "donor" },
-                            onPaymentComplete = {
-                                // Handle payment completion
-                                currentScreen.value = "home"
-                            }
-                        )
-                    }
-
-                    "donation_history" -> {
-                        DonationHistoryScreen(
-                            onBackClick = { currentScreen.value = "home" }
-                        )
-                    }
-
-                    "profile_settings" -> {
-                        ProfileSettingsScreen(
-                            onBackClick = { currentScreen.value = "home" },
-                            onContactClick = { currentScreen.value = "contact_information" },
-                            onFamilyClick = { currentScreen.value = "family_information" },
-                            onBankClick = { /* TODO: Navigate to bank accounts screen */ },
-                            onInsuranceClick = { /* TODO: Navigate to insurance screen */ },
-                            onMedicalClick = { /* TODO: Navigate to medical info screen */ },
-                            onLogoutClick = { currentScreen.value = "home" }
-                        )
-                    }
-                    "family_information" -> {
-                        FamilyInformationScreen(
-                            onBackClick = { currentScreen.value = "profile_settings" },
-                            onUpdateClick = { currentScreen.value = "profile_settings" }
-                        )
-                    }
-
-                    "contact_information" -> {
-                        ContactInformationScreen(
-                            onBackClick = { currentScreen.value = "profile_settings" },
-                            onUpdateClick = { currentScreen.value = "profile_settings" }
-                        )
-                    }
-
-                    "transaction" -> {
-                        TransactionScreen(
-                            onBackClick = { currentScreen.value = "home" }
-                        )
-                    }
-
-                    "manage_family_members" -> {
-                        ManageFamilyMembersScreen(
-                            onBackClick = { currentScreen.value = "share_location" },
-                            onAddMemberClick = {
-                                // Navigate to add family member form
-                                // For now, just return to share location
-                                currentScreen.value = "share_location"
-                            },
-                            onEditMemberClick = { memberId, memberName ->
-                                // Navigate to edit family member form
-                                // For now, just return to share location
-                                currentScreen.value = "share_location"
-                            }
-                        )
-                    }
-
-                    "add_balance" -> {
-                        AddBalanceScreen(
-                            onBackClick = { currentScreen.value = "home" }
-                        )
-                    }
-
-                    "add_nominee_cards" -> {
-                        AddNomineeCardsScreen(
-                            onAddNomineeClick = {
-                                currentScreen.value = "nominee_details"
-                            },
-                            onAddFamilyMemberClick = {
-                                currentScreen.value = "family_member_details"
-                            },
-                            onShareLocationClick = {
-                                currentScreen.value = "share_location"
-                            },
-                            onSkipClick = {
-                                currentScreen.value = "home"
-                            }
-                        )
-                    }
-
-                    "wallet_settings" -> {
-                        WalletSettingsScreen(
-                            onBackClick = { currentScreen.value = "home" },
-                            onFAQsClick = { currentScreen.value = "legal_support" }
-                        )
-                    }
-
-                    "legal_support" -> {
-                        LegalAndSupportScreen(
-                            onReadFullTermsClick = { /* Handle read full terms */ },
-                            onViewPrivacyPolicyClick = { /* Handle view privacy policy */ },
-                            onContactSupportClick = { /* Handle contact support */ },
-                            onBrowseFAQsClick = { /* Handle browse FAQs */ },
-                            onHomeClick = { currentScreen.value = "home" },
-                            onAcceptTermsClick = { currentScreen.value = "home" }
-                        )
-                    }
-
-                    "qr_code_scanner" -> {
-                        QRCodeScannerScreen(
-                            onQRCodeDetected = { qrCode ->
-                                // Handle QR code detection
-                                currentScreen.value = "home"
-                            }
-                        )
-                    }
-
-                    "government_fundraisers" -> {
-                        GovernmentFundraisersScreen(
-                            onBackClick = { currentScreen.value = "home" },
-                            onFinish = { currentScreen.value = "home" }
-                        )
-                    }
-
-                    "nominee_details" -> {
-                        when (currentSubScreen.value) {
-                            "otp_verification" -> {
-                                NomineeOTPVerificationScreen(
-                                    screenType = "nominee",
-                                    onAddNomineeClick = {
-                                        // Reset to form
-                                        currentSubScreen.value = ""
-                                    },
-                                    onSendOTPClick = {
-                                        // Handle send OTP
-                                    },
-                                    onVerifyOTPClick = {
-                                        // Handle verify OTP - completion
-                                        currentScreen.value = "home"
-                                        currentSubScreen.value = ""
-                                    },
-                                    onGoBackClick = {
-                                        currentSubScreen.value = ""
-                                    }
-                                )
-                            }
-                            else -> {
-                                NomineeDetailsScreen(
-                                    onSubmitClick = {
-                                        // Navigate to OTP Verification
-                                        currentSubScreen.value = "otp_verification"
-                                        currentOTPType.value = "nominee"
-                                    },
-                                    onGoBackClick = {
-                                        currentScreen.value = "add_nominee_cards"
-                                    },
-                                    onUploadClick = { onFilesSelected ->
-                                        // Simulate file selection for front and back side of ID
-                                        // In production, you would use ActivityResultContracts to launch file picker
-                                        onFilesSelected("Aadhaar_Front.pdf", "Aadhaar_Back.pdf")
-                                    }
-                                )
-                            }
-                        }
-                    }
-
-                    "family_member_details" -> {
-                        when (currentSubScreen.value) {
-                            "otp_verification" -> {
-                                NomineeOTPVerificationScreen(
-                                    screenType = "family_member",
-                                    onAddNomineeClick = {
-                                        // Reset to form
-                                        currentSubScreen.value = ""
-                                    },
-                                    onSendOTPClick = {
-                                        // Handle send OTP
-                                    },
-                                    onVerifyOTPClick = {
-                                        // Handle verify OTP - completion
-                                        currentScreen.value = "add_nominee_cards"
-                                        currentSubScreen.value = ""
-                                    },
-                                    onGoBackClick = {
-                                        currentSubScreen.value = ""
-                                    }
-                                )
-                            }
-                            else -> {
-                                FamilyMemberDetailsScreen(
-                                    onSubmitClick = {
-                                        // Navigate to OTP Verification
-                                        currentSubScreen.value = "otp_verification"
-                                        currentOTPType.value = "family_member"
-                                    },
-                                    onGoBackClick = {
-                                        currentScreen.value = "add_nominee_cards"
-                                    },
-                                    onUploadClick = { onFilesSelected ->
-                                        // Simulate file selection for front and back side of ID
-                                        // In production, you would use ActivityResultContracts to launch file picker
-                                        onFilesSelected("ID_Front.pdf", "ID_Back.pdf")
-                                    }
-                                )
-                            }
-                        }
-                    }
-
-                    else -> {
-                        // Default to fundraiser screen
-                        SelectFundraiserCategoryScreen(
-                            viewModel = viewModel(),
-                            onNextClick = { category, customTitle ->
-                                currentScreen.value = "create_fundraiser"
-                            },
-                            onBackClick = {
-                                currentScreen.value = "home"
-                            }
-                        )
-                    }
+                else -> {
+                    HomeScreen(
+                        onDonorClick = { currentScreen.value = "donation_history" },
+                        onHistoryClick = { currentScreen.value = "transaction" },
+                        onHomeClick = { currentScreen.value = "home" },
+                        onAnalyticsClick = { currentScreen.value = "dashboard" },
+                        onNotificationClick = { /* Handle notifications */ },
+                        onProfileClick = { currentScreen.value = "profile_settings" },
+                        onTransferClick = { currentScreen.value = "add_balance" },
+                        onNomineeClick = { currentScreen.value = "add_nominee_cards" },
+                        onAddDonationClick = { currentScreen.value = "donor" },
+                        onSettingsClick = { currentScreen.value = "wallet_settings" },
+                        onQRCodeScannerClick = { currentScreen.value = "qr_scanner" },
+                        onGenerateQRCodeClick = { currentScreen.value = "qr_generate" },
+                        onGovernmentFundraisersClick = { currentScreen.value = "government_fundraisers" },
+                        onSOSClick = { sosScreenOpen.value = true }
+                    )
                 }
             }
         }

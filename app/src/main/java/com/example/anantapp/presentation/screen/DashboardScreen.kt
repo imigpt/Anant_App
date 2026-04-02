@@ -5,14 +5,19 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.outlined.BarChart
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -27,22 +32,19 @@ fun DashboardScreen(
     onNotificationClick: () -> Unit = {},
     onProfileClick: () -> Unit = {}
 ) {
-    // State to track which tab is currently selected
-    var selectedItemIndex by remember { mutableIntStateOf(0) }
-    // State to track fundraiser flow (none = not in fundraiser flow, select_category = selecting category, create = creating)
-    var fundraiserFlowState by remember { mutableStateOf<String?>(null) }
+    // FIX: Used rememberSaveable to survive configuration changes (like screen rotation)
+    var selectedItemIndex by rememberSaveable { mutableIntStateOf(0) }
+    var fundraiserFlowState by rememberSaveable { mutableStateOf<String?>(null) }
 
     Scaffold(
-        containerColor = Color.White, // Makes the whole background blank white
+        containerColor = Color.White,
         bottomBar = {
-            // FIX: Only show the bottom navigation bar if we are NOT on the Analytics tab (index 1)
             if (selectedItemIndex != 1) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(Color.White)
                 ) {
-                    // Navigation items container
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -64,7 +66,7 @@ fun DashboardScreen(
 
                         // Analytics/Chart
                         NavigationItemDashboard(
-                            selectedIcon = Icons.Outlined.BarChart,
+                            selectedIcon = Icons.Filled.BarChart, // FIX: Changed to Filled
                             unselectedIcon = Icons.Outlined.BarChart,
                             isSelected = selectedItemIndex == 1,
                             onClick = {
@@ -76,7 +78,7 @@ fun DashboardScreen(
 
                         // Notifications
                         NavigationItemDashboard(
-                            selectedIcon = Icons.Outlined.Notifications,
+                            selectedIcon = Icons.Filled.Notifications, // FIX: Changed to Filled
                             unselectedIcon = Icons.Outlined.Notifications,
                             isSelected = selectedItemIndex == 2,
                             onClick = {
@@ -87,7 +89,7 @@ fun DashboardScreen(
 
                         // Profile
                         NavigationItemDashboard(
-                            selectedIcon = Icons.Outlined.Person,
+                            selectedIcon = Icons.Filled.Person, // FIX: Changed to Filled
                             unselectedIcon = Icons.Outlined.Person,
                             isSelected = selectedItemIndex == 3,
                             onClick = {
@@ -100,14 +102,15 @@ fun DashboardScreen(
             }
         }
     ) { innerPadding ->
-        // Main content area that switches based on the selected tab
+        // FIX: Apply innerPadding to the parent Box so all tabs respect system bounds properly.
+        // Scaffold will automatically adjust the bottom padding to 0 when the bottomBar is hidden.
         Box(
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
         ) {
             when (selectedItemIndex) {
-                0 -> Box(modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding)) {
+                0 -> {
                     HomeScreen(
                         onDonorClick = {},
                         onHistoryClick = {},
@@ -120,53 +123,45 @@ fun DashboardScreen(
                         onAddDonationClick = {},
                         onSettingsClick = {},
                         onQRCodeScannerClick = {},
+                        onGenerateQRCodeClick = {},
                         onGovernmentFundraisersClick = {}
                     )
                 }
                 1 -> {
                     when (fundraiserFlowState) {
-                        "select_category" -> Box(modifier = Modifier.fillMaxSize()) {
-                            SelectFundraiserCategoryScreen(
-                                onBackClick = { selectedItemIndex = 0 },
-                                onNextClick = { _, _ -> fundraiserFlowState = "create" }
-                            )
-                        }
-                        "create" -> Box(modifier = Modifier.fillMaxSize()) {
-                            CreateFundraiserScreen(
-                                onBackClick = { fundraiserFlowState = "select_category" },
-                                onDraftSaved = { fundraiserFlowState = null; selectedItemIndex = 0 },
-                                onFundraiserCreated = { },
-                                onNavigateToTargetPayments = { fundraiserFlowState = "target_payments" }
-                            )
-                        }
-                        "target_payments" -> Box(modifier = Modifier.fillMaxSize()) {
-                            TargetAndPaymentsScreen(
-                                onBackClick = { fundraiserFlowState = "create" },
-                                onDraftSaved = { fundraiserFlowState = null; selectedItemIndex = 0 },
-                                onFundraiserPublished = { _ -> fundraiserFlowState = "preview_submit" }
-                            )
-                        }
-                        "preview_submit" -> Box(modifier = Modifier.fillMaxSize()) {
-                            PreviewAndSubmitScreen(
-                                onBackClick = { fundraiserFlowState = "target_payments" },
-                                onDraftSaved = { fundraiserFlowState = null; selectedItemIndex = 0 },
-                                onSubmitSuccess = { _ -> fundraiserFlowState = null; selectedItemIndex = 0 }
-                            )
-                        }
-                        else -> Box(modifier = Modifier.fillMaxSize()) {
-                            SelectFundraiserCategoryScreen(
-                                onBackClick = { selectedItemIndex = 0 },
-                                onNextClick = { _, _ -> fundraiserFlowState = "create" }
-                            )
-                        }
+                        "select_category" -> SelectFundraiserCategoryScreen(
+                            onBackClick = { selectedItemIndex = 0 },
+                            onNextClick = { _, _ -> fundraiserFlowState = "create" }
+                        )
+                        "create" -> CreateFundraiserScreen(
+                            onBackClick = { fundraiserFlowState = "select_category" },
+                            onDraftSaved = { fundraiserFlowState = null; selectedItemIndex = 0 },
+                            onFundraiserCreated = { },
+                            onNavigateToTargetPayments = { fundraiserFlowState = "target_payments" }
+                        )
+                        "target_payments" -> TargetAndPaymentsScreen(
+                            onBackClick = { fundraiserFlowState = "create" },
+                            onDraftSaved = { fundraiserFlowState = null; selectedItemIndex = 0 },
+                            onFundraiserPublished = { _ -> fundraiserFlowState = "preview_submit" }
+                        )
+                        "preview_submit" -> PreviewAndSubmitScreen(
+                            onBackClick = { fundraiserFlowState = "target_payments" },
+                            onDraftSaved = { fundraiserFlowState = null; selectedItemIndex = 0 },
+                            onSubmitSuccess = { _ -> fundraiserFlowState = null; selectedItemIndex = 0 }
+                        )
+                        else -> SelectFundraiserCategoryScreen(
+                            onBackClick = { selectedItemIndex = 0 },
+                            onNextClick = { _, _ -> fundraiserFlowState = "create" }
+                        )
                     }
                 }
                 2 -> {
-                    // Placeholder for Notifications Screen
+                    // FIX: Added a temporary placeholder so the screen isn't completely blank
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Text(text = "Notifications Screen Coming Soon")
+                    }
                 }
-                3 -> Box(modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding)) {
+                3 -> {
                     ProfileSettingsScreen(
                         onBackClick = { selectedItemIndex = 0 },
                         onContactClick = {},
@@ -189,23 +184,23 @@ private fun NavigationItemDashboard(
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
-    val selectedColor = Color(0xFFA600FF) // The exact vibrant purple
-    val unselectedColor = Color(0xFFBDBDBD) // Light outline gray
+    val selectedColor = Color(0xFFA600FF)
+    val unselectedColor = Color(0xFFBDBDBD)
 
     Box(
         contentAlignment = Alignment.Center,
         modifier = Modifier
             .clickable(
-                indication = null, // Removes the ripple effect for a cleaner look
+                indication = null,
                 interactionSource = remember { MutableInteractionSource() },
                 onClick = onClick
             )
-            .padding(16.dp) // Creates a comfortable touch target area around the icon
+            .padding(16.dp)
     ) {
         Icon(
             imageVector = if (isSelected) selectedIcon else unselectedIcon,
             contentDescription = null,
-            modifier = Modifier.size(28.dp), // Slightly larger to match the image
+            modifier = Modifier.size(28.dp),
             tint = if (isSelected) selectedColor else unselectedColor
         )
     }

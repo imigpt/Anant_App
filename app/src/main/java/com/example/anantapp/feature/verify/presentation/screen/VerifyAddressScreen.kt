@@ -221,7 +221,7 @@ fun VerifyAddressScreen(
 }
 
 @Composable
-private fun GradientInputField(
+fun GradientInputField(
     value: String,
     onValueChange: (String) -> Unit,
     placeholder: String,

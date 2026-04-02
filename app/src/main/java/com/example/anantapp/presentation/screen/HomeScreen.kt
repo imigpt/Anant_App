@@ -14,6 +14,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Apps
 import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.CreditCard
+import androidx.compose.material.icons.filled.EmergencyRecording
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Menu
@@ -63,6 +64,8 @@ fun HomeScreen(
     onSettingsClick: () -> Unit = {},
     onQRCodeScannerClick: () -> Unit = {},
     onGovernmentFundraisersClick: () -> Unit = {},
+    onGenerateQRCodeClick: () -> Unit = {},
+    onSOSClick: () -> Unit = {},
     viewModel: HomeScreenViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -98,6 +101,10 @@ fun HomeScreen(
                         onQRCodeScannerClick()
                         scope.launch { drawerState.close() }
                     },
+                    onGenerateQRCodeClick = {
+                        onGenerateQRCodeClick()
+                        scope.launch { drawerState.close() }
+                    },
                     onGovernmentFundraisersClick = {
                         onGovernmentFundraisersClick()
                         scope.launch { drawerState.close() }
@@ -107,6 +114,22 @@ fun HomeScreen(
         }
     ) {
         Scaffold(
+            floatingActionButton = {
+                FloatingActionButton(
+                    containerColor = com.example.anantapp.ui.theme.PrimaryRed,
+                    contentColor = Color.White,
+                    onClick = onSOSClick,
+                    modifier = Modifier
+                        .padding(16.dp)
+                        .size(56.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.EmergencyRecording,
+                        contentDescription = "SOS Emergency",
+                        modifier = Modifier.size(28.dp)
+                    )
+                }
+            },
             bottomBar = {
                 BottomNavigationBar(
                     selectedItem = uiState.selectedNavItem,
@@ -451,6 +474,7 @@ fun DrawerContent(
     onProfileClick: () -> Unit = {},
     onSettingsClick: () -> Unit = {},
     onQRCodeScannerClick: () -> Unit = {},
+    onGenerateQRCodeClick: () -> Unit = {},
     onGovernmentFundraisersClick: () -> Unit = {}
 ) {
     Column(
@@ -525,7 +549,7 @@ fun DrawerContent(
         DrawerMenuItem(
             icon = Icons.Default.Receipt,
             label = "QR Code Generate",
-            onClick = {}
+            onClick = onGenerateQRCodeClick
         )
 
         DrawerMenuItem(

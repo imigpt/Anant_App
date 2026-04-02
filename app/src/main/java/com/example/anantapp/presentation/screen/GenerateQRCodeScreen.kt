@@ -449,7 +449,7 @@ private fun VehicleTypeSection(
     selectedType: String?,
     onTypeSelected: (String) -> Unit
 ) {
-    val types = listOf("2 Wheeler", "4 Wheeler", "Other")
+    val types = listOf("2 Wheeler", "3 Wheeler Auto", "4 Wheeler", "Other")
     Column(modifier = Modifier.fillMaxWidth()) {
         Text(
             text = "Select Vehicle Type",

@@ -8,6 +8,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Home
@@ -27,6 +28,7 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -227,7 +229,8 @@ fun VerifyAddressContent(
                         onValueChange = { onValueChange("pincode", it) },
                         placeholder = "Pincode",
                         icon = Icons.Outlined.LocalShipping,
-                        maxLength = 6
+                        maxLength = 6,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                     )
                 }
 
@@ -313,7 +316,8 @@ private fun GradientInputField(
     onValueChange: (String) -> Unit,
     placeholder: String,
     icon: ImageVector,
-    maxLength: Int = Int.MAX_VALUE
+    maxLength: Int = Int.MAX_VALUE,
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default
 ) {
     Box(
         modifier = Modifier
@@ -378,6 +382,7 @@ private fun GradientInputField(
                         color = Color.Black
                     ),
                     singleLine = true,
+                    keyboardOptions = keyboardOptions,
                     cursorBrush = SolidColor(Color.Black),
                     modifier = Modifier.fillMaxWidth()
                 )

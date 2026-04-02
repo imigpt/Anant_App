@@ -28,12 +28,15 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.anantapp.feature.verify.presentation.screen.GradientInputField
 import com.example.anantapp.feature.verify.presentation.viewmodel.VerifyBankViewModel
+import com.example.anantapp.presentation.screen.GradientInputField
 
 // Exact Color definitions for Background
 private val OrangeGradientStart = Color(0xFFFF6300)
@@ -175,7 +178,7 @@ fun VerifyBankScreen(
                     AccountTypeToggle(
                         label = "Saving\nAccount",
                         isSelected = uiState.accountType == "Saving",
-                        activeTrackColor = Color.Black, // Black track when active
+                        activeTrackColor = Color(0xFF34C759), // Green
                         onClick = { viewModel.updateField("accountType", "Saving") },
                         modifier = Modifier.weight(1f)
                     )
@@ -192,31 +195,33 @@ fun VerifyBankScreen(
                         value = uiState.firstName,
                         onValueChange = { viewModel.updateField("firstName", it) },
                         placeholder = "First name",
-                        icon = Icons.Outlined.Person
+                        icon = Icons.Outlined.Person,
                     )
                     GradientInputField(
                         value = uiState.lastName,
                         onValueChange = { viewModel.updateField("lastName", it) },
                         placeholder = "Last name",
-                        icon = Icons.Outlined.Person
+                        icon = Icons.Outlined.Person,
                     )
                     GradientInputField(
                         value = uiState.bankName,
                         onValueChange = { viewModel.updateField("bankName", it) },
                         placeholder = "Bank name",
-                        icon = Icons.Outlined.Lock // Closest match for locked document
+                        icon = Icons.Outlined.Lock,
+                        // Closest match for locked document
                     )
                     GradientInputField(
                         value = uiState.accountNumber,
                         onValueChange = { viewModel.updateField("accountNumber", it) },
                         placeholder = "Account number",
-                        icon = Icons.Outlined.Key
+                        icon = Icons.Outlined.Key,
+                        keyboardType = KeyboardType.Number
                     )
                     GradientInputField(
                         value = uiState.ifscCode,
                         onValueChange = { viewModel.updateField("ifscCode", it.uppercase()) },
                         placeholder = "IFSC code",
-                        icon = Icons.Outlined.MoreHoriz
+                        icon = Icons.Outlined.MoreHoriz,
                     )
                 }
 
@@ -349,7 +354,8 @@ private fun GradientInputField(
     value: String,
     onValueChange: (String) -> Unit,
     placeholder: String,
-    icon: ImageVector
+    icon: ImageVector,
+    keyboardType: KeyboardType
 ) {
     Box(
         modifier = Modifier

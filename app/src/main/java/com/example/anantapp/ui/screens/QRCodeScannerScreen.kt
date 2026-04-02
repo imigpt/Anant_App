@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.*
@@ -52,7 +53,8 @@ import java.util.concurrent.Executors
 
 @Composable
 fun QRCodeScannerScreen(
-    onQRCodeDetected: (String) -> Unit = {}
+    onQRCodeDetected: (String) -> Unit = {},
+    onBackClick: () -> Unit = {}
 ) {
     val context = LocalContext.current
     
@@ -88,6 +90,21 @@ fun QRCodeScannerScreen(
             .fillMaxSize()
             .background(Color(0xFFF9F9F9))
     ) {
+        // Back Button
+        IconButton(
+            onClick = onBackClick,
+            modifier = Modifier
+                .align(Alignment.TopStart)
+                .padding(16.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.ArrowBack,
+                contentDescription = "Back",
+                tint = Color.Black,
+                modifier = Modifier.size(24.dp)
+            )
+        }
+
         // Top-Left Solid Blue Blob (behind the card)
         Box(
             modifier = Modifier
