@@ -254,8 +254,8 @@ fun FamilyInformationScreen(
             CustomFormField(label = "Family Head Name", value = familyHeadName.value, onValueChange = { familyHeadName.value = it })
             CustomFormField(label = "Spouse Name", value = spouseName.value, onValueChange = { spouseName.value = it })
             CustomFormField(label = "Spouse Age", value = spouseAge.value, onValueChange = { spouseAge.value = it })
-            CustomFormField(label = "Nominee 1", value = nominee1.value, onValueChange = { nominee1.value = it })
-            CustomFormField(label = "Nominee 2", value = nominee2.value, onValueChange = { nominee2.value = it })
+            CustomFormField(label = "Nominee 1", value = nominee1.value, onValueChange = { nominee1.value = it }, isMandatory = true)
+            CustomFormField(label = "Nominee 2", value = nominee2.value, onValueChange = { nominee2.value = it }, isMandatory = false)
             CustomFormField(label = "Martial Status", value = maritalStatus.value, onValueChange = { maritalStatus.value = it })
             CustomFormField(label = "Family Insurance Status", value = familyInsuranceStatus.value, onValueChange = { familyInsuranceStatus.value = it })
         }
@@ -297,18 +297,32 @@ fun FamilyInformationScreen(
 private fun CustomFormField(
     label: String,
     value: String,
-    onValueChange: (String) -> Unit
+    onValueChange: (String) -> Unit,
+    isMandatory: Boolean = false
 ) {
     Column(
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(6.dp)
     ) {
-        Text(
-            text = label,
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color.Black
-        )
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            Text(
+                text = label,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.Black
+            )
+            if (isMandatory) {
+                Text(
+                    text = "*",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Red
+                )
+            }
+        }
 
         Box(
             modifier = Modifier

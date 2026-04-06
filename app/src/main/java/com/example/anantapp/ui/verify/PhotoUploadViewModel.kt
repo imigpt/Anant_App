@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.anantapp.data.model.PhotoUploadResult
 import com.example.anantapp.data.model.PhotoUploadState
 import com.example.anantapp.data.repository.PhotoUploadRepository
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -17,21 +18,26 @@ class PhotoUploadViewModel : ViewModel() {
     val uiState: StateFlow<PhotoUploadState> = _uiState.asStateFlow()
 
     fun selectPhoto(photoUri: String) {
-        _uiState.value = _uiState.value.copy(
-            photoUri = photoUri,
-            isPhotoSelected = true
-        )
+        viewModelScope.launch {
+            // Show loading state immediately after blink detection
+            _uiState.value = _uiState.value.copy(isLoading = true)
+            
+            // Artificial delay to simulate processing the captured frame
+            delay(1000)
+            
+            _uiState.value = _uiState.value.copy(
+                photoUri = photoUri,
+                isPhotoSelected = true,
+                isLoading = false
+            )
+        }
     }
 
     fun takePhoto() {
-        // This would typically launch camera intent
-        // For now, simulate with a dummy URI
         selectPhoto("content://media/external/images/media/photo_${System.currentTimeMillis()}")
     }
 
     fun choosePhoto() {
-        // This would typically launch file picker
-        // For now, simulate with a dummy URI
         selectPhoto("content://media/external/images/media/photo_${System.currentTimeMillis()}")
     }
 

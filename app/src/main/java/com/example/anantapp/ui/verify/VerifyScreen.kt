@@ -308,7 +308,11 @@ private fun UploadCard(
             Spacer(modifier = Modifier.height(40.dp))
 
             if (isSuccess) {
-                SolidGradientButton(text = "Continue", onClick = onContinueClick)
+                GradientBorderButton(
+                    text = "Continue",
+                    onClick = onContinueClick,
+                    isEnabled = true
+                )
             } else {
                 GradientBorderButton(
                     text = "Submit",

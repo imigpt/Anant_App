@@ -128,7 +128,7 @@ fun ShareRealTimeLocationScreen(
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text(
-                            text = "Allow my family to view my location",
+                            text = "Allow my family And Friend to view my location",
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Medium,
                             color = Color(0xFF222222),

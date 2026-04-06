@@ -13,6 +13,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Person
@@ -20,6 +21,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -50,6 +52,14 @@ fun ProfileSettingsScreen(
 ) {
     val density = LocalDensity.current
     val curveDepth = remember(density) { with(density) { 60.dp.toPx() } }
+
+    // State to track completion status for each settings card
+    // Update these based on your validation logic
+    val isContactComplete = remember { mutableStateOf(false) }
+    val isFamilyComplete = remember { mutableStateOf(false) }
+    val isBankComplete = remember { mutableStateOf(false) }
+    val isInsuranceComplete = remember { mutableStateOf(false) }
+    val isMedicalComplete = remember { mutableStateOf(false) }
 
     // Custom shape to create the deeply curved bottom for the header
     val bottomCurvedShape = remember(curveDepth) {
@@ -256,11 +266,11 @@ fun ProfileSettingsScreen(
                 .padding(horizontal = 20.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            SettingsCard(title = "CONTACT INFORMATION", onClick = onContactClick)
-            SettingsCard(title = "FAMILY INFORMATION", onClick = onFamilyClick)
-            SettingsCard(title = "Update Bank Accounts", onClick = onBankClick)
-            SettingsCard(title = "Update Insurance Policies", onClick = onInsuranceClick)
-            SettingsCard(title = "Update Medical Conditions", onClick = onMedicalClick)
+            SettingsCard(title = "CONTACT INFORMATION", onClick = onContactClick, isComplete = isContactComplete.value)
+            SettingsCard(title = "FAMILY INFORMATION", onClick = onFamilyClick, isComplete = isFamilyComplete.value)
+            SettingsCard(title = "Update Bank Accounts", onClick = onBankClick, isComplete = isBankComplete.value)
+            SettingsCard(title = "Update Insurance Policies", onClick = onInsuranceClick, isComplete = isInsuranceComplete.value)
+            SettingsCard(title = "Update Medical Conditions", onClick = onMedicalClick, isComplete = isMedicalComplete.value)
         }
 
         Spacer(modifier = Modifier.height(48.dp))
@@ -295,7 +305,8 @@ fun ProfileSettingsScreen(
 @Composable
 private fun SettingsCard(
     title: String,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    isComplete: Boolean = false
 ) {
     Box(
         modifier = Modifier
@@ -325,12 +336,28 @@ private fun SettingsCard(
                 color = Color.Black
             )
 
-            Icon(
-                imageVector = Icons.Default.ChevronRight,
-                contentDescription = null,
-                tint = Color.Black,
-                modifier = Modifier.size(24.dp)
-            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                // Blue checkmark if complete
+                if (isComplete) {
+                    Icon(
+                        imageVector = Icons.Default.Check,
+                        contentDescription = "Complete",
+                        tint = Color(0xFF0066FF), // Blue checkmark
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+                
+                // Chevron right
+                Icon(
+                    imageVector = Icons.Default.ChevronRight,
+                    contentDescription = null,
+                    tint = Color.Black,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
         }
     }
 }

@@ -138,6 +138,9 @@ private fun PreviewAndSubmitContent(
         colors = listOf(Color(0xFF9C27B0), Color(0xFFFF9800))
     )
 
+    // Confirmation checkbox state
+    val confirmationChecked = remember { mutableStateOf(false) }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -329,17 +332,49 @@ private fun PreviewAndSubmitContent(
 
                     Spacer(modifier = Modifier.height(20.dp))
 
-                    // ========== Confirmation Text ==========
-                    Text(
-                        text = "I confirm all details are true and documents are valid.",
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Normal,
-                        color = Color(0xFF999999),
-                        textAlign = TextAlign.Center,
+                    // ========== Confirmation Checkbox ==========
+                    Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 16.dp)
-                    )
+                            .padding(vertical = 16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        // Checkbox
+                        Box(
+                            modifier = Modifier
+                                .size(24.dp)
+                                .clip(RoundedCornerShape(4.dp))
+                                .background(
+                                    if (confirmationChecked.value) Color(0xFF8B00FF) else Color.Transparent
+                                )
+                                .border(
+                                    width = 2.dp,
+                                    color = if (confirmationChecked.value) Color(0xFF8B00FF) else Color(0xFFCCCCCC),
+                                    shape = RoundedCornerShape(4.dp)
+                                )
+                                .clickable { confirmationChecked.value = !confirmationChecked.value },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            if (confirmationChecked.value) {
+                                Icon(
+                                    imageVector = Icons.Filled.Check,
+                                    contentDescription = "Confirmed",
+                                    tint = Color.White,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.width(10.dp))
+
+                        Text(
+                            text = "I confirm all details are true and documents are valid.",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Normal,
+                            color = Color(0xFF999999)
+                        )
+                    }
 
                     Spacer(modifier = Modifier.height(16.dp))
 

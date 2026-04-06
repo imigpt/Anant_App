@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -20,6 +21,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PhoneAndroid
@@ -98,7 +100,7 @@ fun LoginScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(top = 100.dp) // Space for the top background to show
+                .padding(top = 300.dp) // Space for the top background to show
                 .shadow(
                     elevation = 20.dp,
                     shape = RoundedCornerShape(topStart = 48.dp, topEnd = 48.dp),
@@ -109,6 +111,7 @@ fun LoginScreen(
                     shape = RoundedCornerShape(topStart = 48.dp, topEnd = 48.dp)
                 )
                 .padding(horizontal = 24.dp)
+                .imePadding()
                 .verticalScroll(scrollState),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -150,41 +153,9 @@ fun LoginScreen(
             Spacer(modifier = Modifier.height(32.dp))
 
             // 4. Divider
-            DividerWithText(text = "Or continue with")
+//            DividerWithText(text = "Or continue with")
 
-            Spacer(modifier = Modifier.height(32.dp))
-
-            // 5. Apple Login Button
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp)
-                    .shadow(elevation = 4.dp, shape = RoundedCornerShape(50))
-                    .clip(RoundedCornerShape(50))
-                    .background(Color.Black)
-                    .clickable { /* Handle Apple Login */ },
-                contentAlignment = Alignment.Center
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    // Make sure you have an ic_apple.xml in your drawables
-                    Image(
-                        painter = painterResource(id = R.drawable.ic_apple),
-                        contentDescription = "Apple Logo",
-                        modifier = Modifier.size(24.dp),
-                        colorFilter = ColorFilter.tint(Color.White)
-                    )
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Text(
-                        text = "Login with Apple",
-                        color = Color.White,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Medium
-                    )
-                }
-            }
+//            Spacer(modifier = Modifier.height(32.dp))
 
             Spacer(modifier = Modifier.weight(1f, fill = false))
             Spacer(modifier = Modifier.height(48.dp))
@@ -217,7 +188,7 @@ private fun LoginForm(
         // Mobile Number Input
         CustomInputField(
             value = uiState.phoneNumber,
-            onValueChange = onPhoneNumberChange,
+            onValueChange = { input -> onPhoneNumberChange(input.filter { it.isDigit() }.take(10)) },
             hint = "Enter Mobile Number",
             icon = {
                 IconGradientCircle {
@@ -229,7 +200,8 @@ private fun LoginForm(
                     )
                 }
             },
-            keyboardType = KeyboardType.Phone
+            keyboardType = KeyboardType.Phone,
+            imeAction = ImeAction.Next
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -237,7 +209,7 @@ private fun LoginForm(
         // OTP Input
         CustomInputField(
             value = uiState.otp,
-            onValueChange = onOtpChange,
+            onValueChange = { input -> onOtpChange(input.filter { it.isDigit() }.take(6)) },
             hint = "OTP",
             icon = {
                 IconGradientCircle {
@@ -250,6 +222,7 @@ private fun LoginForm(
                 }
             },
             keyboardType = KeyboardType.NumberPassword,
+            imeAction = ImeAction.Done,
             trailingContent = {
                 Box(
                     modifier = Modifier
@@ -271,6 +244,9 @@ private fun LoginForm(
     }
 }
 
+// Helper: restrict input to digits and max length when calling from UI
+private fun String.digitsMax(maxLength: Int): String = this.filter { it.isDigit() }.take(maxLength)
+
 @Composable
 private fun CustomInputField(
     value: String,
@@ -278,6 +254,7 @@ private fun CustomInputField(
     hint: String,
     icon: @Composable () -> Unit,
     keyboardType: KeyboardType,
+    imeAction: ImeAction = ImeAction.Default,
     trailingContent: (@Composable () -> Unit)? = null
 ) {
     Row(
@@ -305,10 +282,13 @@ private fun CustomInputField(
                 value = value,
                 onValueChange = onValueChange,
                 singleLine = true,
-                keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = keyboardType,
+                    imeAction = imeAction
+                ),
                 textStyle = TextStyle(color = Color.Black, fontSize = 14.sp),
                 cursorBrush = SolidColor(Color.Black),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth().imePadding()
             )
         }
 
@@ -335,31 +315,31 @@ private fun IconGradientCircle(content: @Composable () -> Unit) {
     }
 }
 
-@Composable
-private fun DividerWithText(text: String) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.Center
-    ) {
-        HorizontalDivider(
-            modifier = Modifier.weight(1f),
-            color = Color(0xFFE0E0E0),
-            thickness = 1.dp
-        )
-        Text(
-            text = text,
-            modifier = Modifier.padding(horizontal = 16.dp),
-            fontSize = 14.sp,
-            color = Color.Gray
-        )
-        HorizontalDivider(
-            modifier = Modifier.weight(1f),
-            color = Color(0xFFE0E0E0),
-            thickness = 1.dp
-        )
-    }
-}
+//@Composable
+//private fun DividerWithText(text: String) {
+//    Row(
+//        modifier = Modifier.fillMaxWidth(),
+//        verticalAlignment = Alignment.CenterVertically,
+//        horizontalArrangement = Arrangement.Center
+//    ) {
+//        HorizontalDivider(
+//            modifier = Modifier.weight(1f),
+//            color = Color(0xFFE0E0E0),
+//            thickness = 1.dp
+//        )
+//        Text(
+//            text = text,
+//            modifier = Modifier.padding(horizontal = 16.dp),
+//            fontSize = 14.sp,
+//            color = Color.Gray
+//        )
+//        HorizontalDivider(
+//            modifier = Modifier.weight(1f),
+//            color = Color(0xFFE0E0E0),
+//            thickness = 1.dp
+//        )
+//    }
+//}
 
 @Composable
 private fun RegisterLink(onNavigate: () -> Unit) {

@@ -257,6 +257,15 @@ fun DonorScreen(
 
                 Spacer(modifier = Modifier.height(12.dp))
 
+                CustomTextField(
+                    value = uiState.state,
+                    onValueChange = { viewModel.updateState(it) },
+                    placeholder = "State / Union Territory",
+                    borderColor = lightBorderColor
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -289,16 +298,16 @@ fun DonorScreen(
                 // Show additional fields for Government Employee
                 if (uiState.donorType == "government") {
                     CustomTextField(
-                        value = uiState.employeeId,
-                        onValueChange = { viewModel.updateEmployeeId(it) },
-                        placeholder = "Employee ID",
+                        value = uiState.department,
+                        onValueChange = { viewModel.updateDepartment(it) },
+                        placeholder = "Department",
                         borderColor = lightBorderColor
                     )
                     Spacer(modifier = Modifier.height(12.dp))
                     CustomTextField(
-                        value = uiState.department,
-                        onValueChange = { viewModel.updateDepartment(it) },
-                        placeholder = "Department",
+                        value = uiState.employeeId,
+                        onValueChange = { viewModel.updateEmployeeId(it) },
+                        placeholder = "Employee ID",
                         borderColor = lightBorderColor
                     )
                     Spacer(modifier = Modifier.height(12.dp))
@@ -365,7 +374,7 @@ fun DonorScreen(
                         val filtered = input.filter { it.isDigit() }
                         viewModel.updateDonationAmount(filtered)
                     },
-                    placeholder = "₹ Amount (digits only)",
+                    placeholder = "₹ Amount",
                     keyboardType = KeyboardType.Number,
                     borderColor = lightBorderColor
                 )

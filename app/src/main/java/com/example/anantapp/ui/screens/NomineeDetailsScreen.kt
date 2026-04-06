@@ -72,11 +72,13 @@ fun NomineeDetailsScreen(
     val emailId = remember { mutableStateOf("") }
     val houseNo = remember { mutableStateOf("") }
     val areaStreet = remember { mutableStateOf("") }
+    val state = remember { mutableStateOf("") }
     val city = remember { mutableStateOf("") }
     val pinCode = remember { mutableStateOf("") }
     val idNumber = remember { mutableStateOf("") }
     val selectedIdProof = remember { mutableStateOf("Aadhaar") }
     val isEmergencyContact = remember { mutableStateOf(false) }
+    val termsAccepted = remember { mutableStateOf(false) }
     val showDatePicker = remember { mutableStateOf(false) }
     
     // Upload State
@@ -253,6 +255,12 @@ fun NomineeDetailsScreen(
                         value = areaStreet.value,
                         onValueChange = { areaStreet.value = it },
                         placeholder = "Area, Street, Landmark"
+                    )
+
+                    WhitePillInputField(
+                        value = state.value,
+                        onValueChange = { state.value = it },
+                        placeholder = "State / Union Territory"
                     )
 
                     Row(
@@ -480,14 +488,48 @@ fun NomineeDetailsScreen(
                     )
                 }
 
-                // Terms Text
-                Text(
-                    text = "I confirm these details are true and I agree to be a nominee.",
-                    fontSize = 12.sp,
-                    color = Color.DarkGray,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(bottom = 20.dp)
-                )
+                // Terms Text with Checkbox
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 20.dp, start = 8.dp, end = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    // Checkbox
+                    Box(
+                        modifier = Modifier
+                            .size(24.dp)
+                            .clip(RoundedCornerShape(4.dp))
+                            .background(
+                                if (termsAccepted.value) Color(0xFF4CAF50) else Color.Transparent
+                            )
+                            .border(
+                                width = 2.dp,
+                                color = if (termsAccepted.value) Color(0xFF4CAF50) else Color.Gray,
+                                shape = RoundedCornerShape(4.dp)
+                            )
+                            .clickable { termsAccepted.value = !termsAccepted.value },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        if (termsAccepted.value) {
+                            Icon(
+                                imageVector = Icons.Filled.Check,
+                                contentDescription = "Terms Accepted",
+                                tint = Color.White,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.width(10.dp))
+
+                    Text(
+                        text = "I confirm these details are true and I agree to be a nominee.",
+                        fontSize = 12.sp,
+                        color = Color.DarkGray
+                    )
+                }
 
                 // Submit Button (Linear Gradient)
                 Box(

@@ -1,6 +1,9 @@
 package com.example.anantapp.feature.verify.presentation.screen
 
+import android.Manifest
+import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -41,13 +44,17 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.anantapp.feature.verify.presentation.viewmodel.PhotoUploadViewModel
+import java.io.File
 
 private val PurpleAccent = Color(0xFF9500FF)
 private val RedAccent = Color(0xFFFF6264)
@@ -62,6 +69,7 @@ fun PhotoUploadScreen(
     onSkipClick: () -> Unit = {},
     onSuccess: () -> Unit = {}
 ) {
+    val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -70,6 +78,14 @@ fun PhotoUploadScreen(
     ) { success ->
         if (success) {
             viewModel.selectPhoto("camera://photo_${System.currentTimeMillis()}")
+        }
+    }
+
+    val cameraPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            // Re-trigger camera logic or inform user
         }
     }
 
@@ -177,13 +193,33 @@ fun PhotoUploadScreen(
                         PhotoUploadButton(
                             text = "Take Photo",
                             icon = Icons.Filled.CameraAlt,
-                            onClick = { /* Launch camera */ }
+                            onClick = {
+                                val permissionCheck = ContextCompat.checkSelfPermission(
+                                    context,
+                                    Manifest.permission.CAMERA
+                                )
+                                if (permissionCheck == PackageManager.PERMISSION_GRANTED) {
+                                    val file = File(context.cacheDir, "photo_${System.currentTimeMillis()}.jpg")
+                                    val uri = FileProvider.getUriForFile(
+                                        context,
+                                        "${context.packageName}.fileprovider",
+                                        file
+                                    )
+                                    cameraLauncher.launch(uri)
+                                } else {
+                                    cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+                                }
+                            }
                         )
 
                         PhotoUploadButton(
                             text = "Choose from Gallery",
                             icon = Icons.Filled.PhotoLibrary,
-                            onClick = { /* Launch gallery */ }
+                            onClick = {
+                                galleryLauncher.launch(
+                                    PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                                )
+                            }
                         )
                     }
 

@@ -14,9 +14,13 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.IconButton
 import androidx.compose.material.icons.outlined.FamilyRestroom
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.Person
@@ -27,18 +31,20 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -59,8 +65,9 @@ fun FamilyDetailsScreen(
     var spouseMobile by remember { mutableStateOf("") }
 
     // States for Kids Inputs
-    var kidAge by remember { mutableStateOf("") }
-    var kidName by remember { mutableStateOf("") }
+    // dynamic list of kids
+    data class Kid(val name: String, val age: String)
+    val kids = remember { mutableStateListOf<Kid>() }
 
     val scrollState = rememberScrollState()
 
@@ -72,15 +79,19 @@ fun FamilyDetailsScreen(
     ) {
         // Decorative solid orange circles in the background (not blur)
         Canvas(modifier = Modifier.fillMaxSize()) {
-            // Top Right Blob
+            // Top Right Blob (linear gradient)
             drawCircle(
-                color = Color(0xFFFF8C00).copy(alpha = 0.6f),
+                brush = Brush.linearGradient(
+                    colors = listOf(Color(0xFFFF6300).copy(alpha = 0.6f), Color(0xFFFFCF11).copy(alpha = 0.6f))
+                ),
                 center = Offset(size.width - 50f, 150f),
                 radius = 200f
             )
-            // Bottom Left Blob
+            // Bottom Left Blob (linear gradient)
             drawCircle(
-                color = Color(0xFFFF8C00).copy(alpha = 0.6f),
+                brush = Brush.linearGradient(
+                    colors = listOf(Color(0xFFFF6300).copy(alpha = 0.6f), Color(0xFFFFCF11).copy(alpha = 0.6f))
+                ),
                 center = Offset(100f, size.height - 150f),
                 radius = 150f
             )
@@ -167,7 +178,10 @@ fun FamilyDetailsScreen(
                 ToggleOptionRow(
                     label = "Are you married",
                     isChecked = isMarried,
-                    onCheckedChange = { isMarried = it }
+                    onCheckedChange = { checked ->
+                        isMarried = checked
+                        if (checked) isSingleParent = false
+                    }
                 )
 
                 AnimatedVisibility(
@@ -188,15 +202,33 @@ fun FamilyDetailsScreen(
                             icon = Icons.Outlined.FamilyRestroom,
                             hint = "Spouse age",
                             value = spouseAge,
-                            onValueChange = { spouseAge = it }
+                            onValueChange = { input -> spouseAge = input.filter { it.isDigit() }.take(3) },
+                            keyboardType = KeyboardType.Number
                         )
+                        if (spouseAge.isNotEmpty() && spouseAge.length != 3) {
+                            Text(
+                                text = "Spouse age must be exactly 3 digits",
+                                fontSize = 12.sp,
+                                color = Color.Red,
+                                modifier = Modifier.padding(start = 8.dp, top = 4.dp)
+                            )
+                        }
                         Spacer(modifier = Modifier.height(12.dp))
                         GradientInputField(
                             icon = Icons.Outlined.PhoneAndroid,
                             hint = "Spouse's mobile number",
                             value = spouseMobile,
-                            onValueChange = { spouseMobile = it }
+                            onValueChange = { input -> spouseMobile = input.filter { it.isDigit() }.take(10) },
+                            keyboardType = KeyboardType.Number
                         )
+                        if (spouseMobile.isNotEmpty() && spouseMobile.length != 10) {
+                            Text(
+                                text = "Mobile number must be exactly 10 digits",
+                                fontSize = 12.sp,
+                                color = Color.Red,
+                                modifier = Modifier.padding(start = 8.dp, top = 4.dp)
+                            )
+                        }
                     }
                 }
 
@@ -220,26 +252,59 @@ fun FamilyDetailsScreen(
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Spacer(modifier = Modifier.height(12.dp))
-                        GradientInputField(
-                            icon = Icons.Outlined.SentimentSatisfied, // Smiley Face Icon
-                            hint = "Enter Your Kid's Age",
-                            value = kidAge,
-                            onValueChange = { kidAge = it }
-                        )
-                        Spacer(modifier = Modifier.height(12.dp))
-                        GradientInputField(
-                            icon = Icons.Outlined.SentimentSatisfied, // Smiley Face Icon
-                            hint = "Enter Your Kid's Name",
-                            value = kidName,
-                            onValueChange = { kidName = it }
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
+                        // Dynamic list of kid inputs
+                        Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                            kids.forEachIndexed { index, kid ->
+                                Column(modifier = Modifier.fillMaxWidth()) {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Box(modifier = Modifier.weight(1f)) {
+                                            GradientInputField(
+                                                icon = Icons.Outlined.SentimentSatisfied,
+                                                hint = "Kid age",
+                                                value = kid.age,
+                                                onValueChange = { newAge ->
+                                                    kids[index] = kid.copy(age = newAge.filter { it.isDigit() }.take(2))
+                                                },
+                                                keyboardType = KeyboardType.Number
+                                            )
+                                            if (kid.age.isNotEmpty() && kid.age.length != 2) {
+                                                Text(
+                                                    text = "Kid age must be 2 digits",
+                                                    fontSize = 12.sp,
+                                                    color = Color.Red,
+                                                    modifier = Modifier.padding(start = 8.dp, top = 4.dp)
+                                                )
+                                            }
+                                        }
 
-                        // Add Your Kid Button
-                        AddPillButton(
-                            text = "Add Your Kid",
-                            onClick = { /* Handle add kid */ }
-                        )
+                                        Spacer(modifier = Modifier.width(8.dp))
+
+                                        // Remove button
+                                        IconButton(onClick = { kids.removeAt(index) }) {
+                                            Icon(Icons.Filled.Close, contentDescription = "Remove kid", tint = Color.Black)
+                                        }
+                                    }
+
+                                    Spacer(modifier = Modifier.height(8.dp))
+
+                                    GradientInputField(
+                                        icon = Icons.Outlined.SentimentSatisfied,
+                                        hint = "Kid name",
+                                        value = kid.name,
+                                        onValueChange = { newName ->
+                                            kids[index] = kid.copy(name = newName)
+                                        }
+                                    )
+                                }
+                                Spacer(modifier = Modifier.height(8.dp))
+                            }
+
+                            // Add Your Kid Button — appends a new empty kid entry
+                            AddPillButton(
+                                text = "Add Your Kid",
+                                onClick = { kids.add(Kid(name = "", age = "")) }
+                            )
+                        }
                     }
                 }
 
@@ -248,7 +313,10 @@ fun FamilyDetailsScreen(
                 ToggleOptionRow(
                     label = "Are you a Single Parent",
                     isChecked = isSingleParent,
-                    onCheckedChange = { isSingleParent = it }
+                    onCheckedChange = { checked ->
+                        isSingleParent = checked
+                        if (checked) isMarried = false
+                    }
                 )
 
                 Spacer(modifier = Modifier.height(48.dp))
@@ -353,7 +421,8 @@ fun GradientInputField(
     icon: ImageVector,
     hint: String,
     value: String,
-    onValueChange: (String) -> Unit
+    onValueChange: (String) -> Unit,
+    keyboardType: KeyboardType = KeyboardType.Text
 ) {
     Box(
         modifier = Modifier
@@ -363,8 +432,8 @@ fun GradientInputField(
             .background(
                 brush = Brush.horizontalGradient(
                     colors = listOf(
-                        Color(0xFFFF8C00), // Orange
-                        Color(0xFFFFB300)  // Yellow-Orange
+                        Color(0xFFFF6300), // New orange #FF6300
+                        Color(0xFFFFCF11)  // New yellow #FFCF11
                     )
                 ),
                 shape = RoundedCornerShape(28.dp)
@@ -380,7 +449,7 @@ fun GradientInputField(
                 modifier = Modifier
                     .size(48.dp)
                     .background(Color.White, CircleShape)
-                    .border(1.dp, Color(0xFFFF8C00), CircleShape),
+                    .border(1.dp, Color(0xFFFF6300), CircleShape),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
@@ -391,11 +460,29 @@ fun GradientInputField(
                 )
             }
             Spacer(modifier = Modifier.width(12.dp))
-            Text(
-                text = if (value.isEmpty()) hint else value,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Medium,
-                color = if (value.isEmpty()) Color.Black.copy(alpha = 0.5f) else Color.Black
+            BasicTextField(
+                value = value,
+                onValueChange = onValueChange,
+                singleLine = true,
+                textStyle = androidx.compose.ui.text.TextStyle(
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = Color.Black
+                ),
+                cursorBrush = SolidColor(Color.Black),
+                keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
+                modifier = Modifier.weight(1f),
+                decorationBox = { innerTextField ->
+                    if (value.isEmpty()) {
+                        Text(
+                            text = hint,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = Color.Black.copy(alpha = 0.5f)
+                        )
+                    }
+                    innerTextField()
+                }
             )
         }
     }
@@ -415,8 +502,8 @@ fun ToggleOptionRow(
             .background(
                 brush = Brush.horizontalGradient(
                     colors = listOf(
-                        Color(0xFFFF8C00),  // Orange
-                        Color(0xFFFFB300)   // Yellow-Orange
+                        Color(0xFFFF6300),  // New orange #FF6300
+                        Color(0xFFFFCF11)   // New yellow #FFCF11
                     )
                 ),
                 shape = RoundedCornerShape(28.dp)
