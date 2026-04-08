@@ -248,7 +248,14 @@ private fun MainContent(modifier: Modifier = Modifier) {
                 "payment" -> {
                     PaymentMethodScreen(
                         onBackClick = { currentScreen.value = "donor" },
-                        onPaymentComplete = { currentScreen.value = "home" }
+                        onPaymentComplete = { currentScreen.value = "thankyou" }
+                    )
+                }
+                "thankyou" -> {
+                    ThankyouScreen(
+                        onDownloadInvoiceClick = { /* Handle invoice download */ },
+                        onSkipClick = { currentScreen.value = "home" },
+                        onNextClick = { currentScreen.value = "home" }
                     )
                 }
                 "donation_history" -> DonationHistoryScreen(onBackClick = { currentScreen.value = "home" })

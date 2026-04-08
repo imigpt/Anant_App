@@ -54,6 +54,7 @@ import com.example.anantapp.presentation.viewmodel.PreviewAndSubmitViewModel
 @Composable
 fun PreviewAndSubmitScreen(
     viewModel: PreviewAndSubmitViewModel = viewModel(),
+    fundraiserId: String = "FR-2025-001",
     fundraiserTitle: String = "Help Mohan fight Cancer",
     fundraiserStory: String = "Mohan needs urgent chemo...",
     goalAmount: String = "₹ 1,00,000",
@@ -106,6 +107,7 @@ fun PreviewAndSubmitScreen(
         )
     } else {
         PreviewAndSubmitContent(
+            fundraiserId = fundraiserId,
             onSaveDraft = { viewModel.saveDraft() },
             onSubmit = { viewModel.submitFundraiser() },
             fundraiserTitle = fundraiserTitle,
@@ -119,6 +121,7 @@ fun PreviewAndSubmitScreen(
 
 @Composable
 private fun PreviewAndSubmitContent(
+    fundraiserId: String,
     onSaveDraft: () -> Unit,
     onSubmit: () -> Unit,
     fundraiserTitle: String,
@@ -183,6 +186,35 @@ private fun PreviewAndSubmitContent(
                 )
                 Spacer(modifier = Modifier.weight(1f))
                 Spacer(modifier = Modifier.width(40.dp))
+            }
+
+            // Fundraiser ID Display
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+                    .background(Color.White.copy(alpha = 0.15f), RoundedCornerShape(8.dp))
+                    .padding(12.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = "Fundraiser ID",
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Normal,
+                        color = Color.White.copy(alpha = 0.8f)
+                    )
+                    Text(
+                        text = fundraiserId,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White,
+                        letterSpacing = 1.sp
+                    )
+                }
             }
 
             // ==================== Main Content Card ====================
@@ -656,6 +688,36 @@ private fun FundraiserStatusScreen(
                     color = Color.White,
                     textAlign = TextAlign.Center
                 )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Fundraiser ID Display
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(0.85f)
+                        .background(Color.White.copy(alpha = 0.15f), RoundedCornerShape(8.dp))
+                        .padding(12.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            text = "Fundraiser ID",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Normal,
+                            color = Color.White.copy(alpha = 0.8f)
+                        )
+                        Text(
+                            text = fundraiserId,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White,
+                            letterSpacing = 1.sp
+                        )
+                    }
+                }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -986,6 +1048,7 @@ private fun VerificationField(
 @Composable
 fun PreviewAndSubmitScreenPreview() {
     PreviewAndSubmitContent(
+        fundraiserId = "FR-2025-001",
         onSaveDraft = {},
         onSubmit = {},
         fundraiserTitle = "Help Mohan fight Cancer",

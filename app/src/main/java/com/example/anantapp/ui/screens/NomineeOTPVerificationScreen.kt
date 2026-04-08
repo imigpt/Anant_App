@@ -28,6 +28,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -46,9 +47,12 @@ fun NomineeOTPVerificationScreen(
 ) {
     val phoneNumber = remember { mutableStateOf("") }
     val otpCode = remember { mutableStateOf("") }
+    val isOTPVerified = remember { mutableStateOf(false) }
 
     val screenTitle = if (screenType == "family_member") "Add Family Member" else "Nominee Details"
     val addButtonText = if (screenType == "family_member") "Add Another Family Member" else "Add Nominee"
+
+    val context = LocalContext.current
 
     Box(
         modifier = Modifier.fillMaxSize()
@@ -128,6 +132,12 @@ fun NomineeOTPVerificationScreen(
                         onClick = onAddNomineeClick
                     )
 
+                    // Verification Method Toggle
+                    VerificationMethodToggle(
+                        isOTPVerified = isOTPVerified.value
+                    )
+
+                    // OTP Verification Section
                     // Mobile Number Input Field with Send OTP
                     MobileNumberInputFieldOTP(
                         value = phoneNumber.value,
@@ -141,7 +151,7 @@ fun NomineeOTPVerificationScreen(
                         onValueChange = { otpCode.value = it }
                     )
 
-                    // Verify OTP Button (Slightly frosted look to match UI)
+                    // Verify OTP Button
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -155,12 +165,18 @@ fun NomineeOTPVerificationScreen(
                             )
                             // 2. CLIP & BACKGROUND SECOND
                             .clip(RoundedCornerShape(28.dp))
-                            .background(Color.White.copy(alpha = 0.65f))
-                            .clickable { onVerifyOTPClick() },
+                            .background(
+                                if (isOTPVerified.value) Color.Green.copy(alpha = 0.65f)
+                                else Color.White.copy(alpha = 0.65f)
+                            )
+                            .clickable(enabled = !isOTPVerified.value) {
+                                isOTPVerified.value = true
+                                onVerifyOTPClick()
+                            },
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = "Verify OTP",
+                            text = if (isOTPVerified.value) "✓ OTP Verified" else "Verify OTP",
                             fontSize = 15.sp,
                             color = Color.Black,
                             fontWeight = FontWeight.Bold
@@ -196,6 +212,35 @@ fun NomineeOTPVerificationScreen(
         }
     }
 }
+
+@Composable
+private fun VerificationMethodToggle(
+    isOTPVerified: Boolean
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(56.dp)
+            .shadow(
+                elevation = 8.dp,
+                shape = RoundedCornerShape(28.dp),
+                ambientColor = Color.Black.copy(alpha = 0.1f),
+                spotColor = Color.Black.copy(alpha = 0.15f)
+            )
+            .clip(RoundedCornerShape(28.dp))
+            .background(Color.White.copy(alpha = 0.7f))
+            .padding(6.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = if (isOTPVerified) "✓ OTP Verification" else "OTP Verification",
+            fontSize = 14.sp,
+            fontWeight = FontWeight.SemiBold,
+            color = Color.Black
+        )
+    }
+}
+
 
 @Composable
 private fun MobileNumberInputFieldOTP(

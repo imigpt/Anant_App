@@ -474,43 +474,43 @@ fun StepThreeUploadDocuments(
     onDraftSaved: () -> Unit,
     onNextClick: () -> Unit
 ) {
-    // Upload states for documents
-    var medicalReportsUri by remember { mutableStateOf<String?>(null) }
-    var prescriptionUri by remember { mutableStateOf<String?>(null) }
-    var invoiceUri by remember { mutableStateOf<String?>(null) }
-    var deathCertificateUri by remember { mutableStateOf<String?>(null) }
-    var patientFamilyPhotoUri by remember { mutableStateOf<String?>(null) }
-    var policeReportUri by remember { mutableStateOf<String?>(null) }
+    // Upload states for documents - now supporting multiple files
+    var medicalReportsUris by remember { mutableStateOf<List<String>>(emptyList()) }
+    var prescriptionUris by remember { mutableStateOf<List<String>>(emptyList()) }
+    var invoiceUris by remember { mutableStateOf<List<String>>(emptyList()) }
+    var deathCertificateUris by remember { mutableStateOf<List<String>>(emptyList()) }
+    var patientFamilyPhotoUris by remember { mutableStateOf<List<String>>(emptyList()) }
+    var policeReportUris by remember { mutableStateOf<List<String>>(emptyList()) }
     
-    // File picker launchers
+    // File picker launchers for multiple files
     val medicalReportsLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent(),
-        onResult = { uri -> medicalReportsUri = uri?.toString() }
+        contract = ActivityResultContracts.GetMultipleContents(),
+        onResult = { uris -> medicalReportsUris = medicalReportsUris + uris.map { it.toString() } }
     )
     
     val prescriptionLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent(),
-        onResult = { uri -> prescriptionUri = uri?.toString() }
+        contract = ActivityResultContracts.GetMultipleContents(),
+        onResult = { uris -> prescriptionUris = prescriptionUris + uris.map { it.toString() } }
     )
     
     val invoiceLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent(),
-        onResult = { uri -> invoiceUri = uri?.toString() }
+        contract = ActivityResultContracts.GetMultipleContents(),
+        onResult = { uris -> invoiceUris = invoiceUris + uris.map { it.toString() } }
     )
     
     val deathCertificateLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent(),
-        onResult = { uri -> deathCertificateUri = uri?.toString() }
+        contract = ActivityResultContracts.GetMultipleContents(),
+        onResult = { uris -> deathCertificateUris = deathCertificateUris + uris.map { it.toString() } }
     )
     
     val patientPhotoLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent(),
-        onResult = { uri -> patientFamilyPhotoUri = uri?.toString() }
+        contract = ActivityResultContracts.GetMultipleContents(),
+        onResult = { uris -> patientFamilyPhotoUris = patientFamilyPhotoUris + uris.map { it.toString() } }
     )
     
     val policeReportLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent(),
-        onResult = { uri -> policeReportUri = uri?.toString() }
+        contract = ActivityResultContracts.GetMultipleContents(),
+        onResult = { uris -> policeReportUris = policeReportUris + uris.map { it.toString() } }
     )
     
     Column(
@@ -524,56 +524,62 @@ fun StepThreeUploadDocuments(
         Column(modifier = Modifier.padding(horizontal = 16.dp)) {
 
             RequiredFormLabel("Medical Reports (PDF/JPEG)")
-            LargeUploadBox(
+            MultiDocumentUploadBox(
                 icon = { DocumentWithAttachmentIcon() },
-                helperText = if (medicalReportsUri != null) "✓ Medical Reports Uploaded" else "Upload clear scans of test reports.",
-                isUploaded = medicalReportsUri != null,
-                onClick = { medicalReportsLauncher.launch("*/*") }
+                helperText = "Upload clear scans of test reports. You can upload multiple files.",
+                uploadedUris = medicalReportsUris,
+                onUploadClick = { medicalReportsLauncher.launch("*/*") },
+                onRemoveFile = { index -> medicalReportsUris = medicalReportsUris.filterIndexed { i, _ -> i != index } }
             )
             Spacer(modifier = Modifier.height(16.dp))
 
             RequiredFormLabel("Doctor's Prescription")
-            LargeUploadBox(
+            MultiDocumentUploadBox(
                 icon = { Icon(Icons.Outlined.Article, contentDescription = null, modifier = Modifier.size(64.dp), tint = Color(0xFFAAAAAA)) },
-                helperText = if (prescriptionUri != null) "✓ Prescription Uploaded" else "Add signed prescription for medical proof.",
-                isUploaded = prescriptionUri != null,
-                onClick = { prescriptionLauncher.launch("image/*") }
+                helperText = "Add signed prescription for medical proof. Upload multiple if needed.",
+                uploadedUris = prescriptionUris,
+                onUploadClick = { prescriptionLauncher.launch("*/*") },
+                onRemoveFile = { index -> prescriptionUris = prescriptionUris.filterIndexed { i, _ -> i != index } }
             )
             Spacer(modifier = Modifier.height(16.dp))
 
             RequiredFormLabel("Hospital Estimate / Invoice")
-            LargeUploadBox(
+            MultiDocumentUploadBox(
                 icon = { Icon(Icons.Outlined.Receipt, contentDescription = null, modifier = Modifier.size(64.dp), tint = Color(0xFFAAAAAA)) },
-                helperText = if (invoiceUri != null) "✓ Invoice Uploaded" else "Attach hospital estimate or bill copy.",
-                isUploaded = invoiceUri != null,
-                onClick = { invoiceLauncher.launch("*/*") }
+                helperText = "Attach hospital estimate or bill copy. Multiple documents supported.",
+                uploadedUris = invoiceUris,
+                onUploadClick = { invoiceLauncher.launch("*/*") },
+                onRemoveFile = { index -> invoiceUris = invoiceUris.filterIndexed { i, _ -> i != index } }
             )
             Spacer(modifier = Modifier.height(16.dp))
 
             RequiredFormLabel("Death Certificate (if applicable)")
-            LargeUploadBox(
+            MultiDocumentUploadBox(
                 icon = { DocumentWithEyeIcon() },
-                helperText = if (deathCertificateUri != null) "✓ Death Certificate Uploaded" else "Upload official death certificate for verification.",
-                isUploaded = deathCertificateUri != null,
-                onClick = { deathCertificateLauncher.launch("image/*") }
+                helperText = "Upload official death certificate for verification. Multiple copies allowed.",
+                uploadedUris = deathCertificateUris,
+                onUploadClick = { deathCertificateLauncher.launch("*/*") },
+                onRemoveFile = { index -> deathCertificateUris = deathCertificateUris.filterIndexed { i, _ -> i != index } }
             )
             Spacer(modifier = Modifier.height(16.dp))
 
             RequiredFormLabel("Photo of Patient/Family")
-            LargeUploadBox(
+            MultiDocumentUploadBox(
                 icon = { Icon(Icons.Outlined.AccountCircle, contentDescription = null, modifier = Modifier.size(64.dp), tint = Color(0xFFAAAAAA)) },
-                helperText = if (patientFamilyPhotoUri != null) "✓ Patient Photo Uploaded" else "Add a clear photo to build trust with donors.",
-                isUploaded = patientFamilyPhotoUri != null,
-                onClick = { patientPhotoLauncher.launch("image/*") }
+                helperText = "Add clear photos to build trust with donors. Upload multiple photos.",
+                uploadedUris = patientFamilyPhotoUris,
+                onUploadClick = { patientPhotoLauncher.launch("image/*") },
+                onRemoveFile = { index -> patientFamilyPhotoUris = patientFamilyPhotoUris.filterIndexed { i, _ -> i != index } }
             )
             Spacer(modifier = Modifier.height(16.dp))
 
             RequiredFormLabel("Any Extra (Police Report for Accident)", isRequired = false)
-            LargeUploadBox(
+            MultiDocumentUploadBox(
                 icon = { DocumentWithArrowIcon() },
-                helperText = if (policeReportUri != null) "✓ Police Report Uploaded" else "If accident case, upload FIR or police report.",
-                isUploaded = policeReportUri != null,
-                onClick = { policeReportLauncher.launch("*/*") }
+                helperText = "If accident case, upload FIR or police report. Multiple documents accepted.",
+                uploadedUris = policeReportUris,
+                onUploadClick = { policeReportLauncher.launch("*/*") },
+                onRemoveFile = { index -> policeReportUris = policeReportUris.filterIndexed { i, _ -> i != index } }
             )
 
             Spacer(modifier = Modifier.height(32.dp))
@@ -692,6 +698,132 @@ fun LargeUploadBox(
                 fontWeight = if (isUploaded) FontWeight.SemiBold else FontWeight.Normal
             )
         }
+    }
+}
+
+@Composable
+fun MultiDocumentUploadBox(
+    icon: @Composable () -> Unit,
+    helperText: String,
+    uploadedUris: List<String>,
+    onUploadClick: () -> Unit,
+    onRemoveFile: (Int) -> Unit
+) {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        // Upload Box
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(160.dp)
+                .border(
+                    width = 1.dp,
+                    color = if (uploadedUris.isNotEmpty()) Color(0xFF9500FF) else Color(0xFFE0E0E0),
+                    shape = RoundedCornerShape(12.dp)
+                )
+                .clip(RoundedCornerShape(12.dp))
+                .background(
+                    color = if (uploadedUris.isNotEmpty()) Color(0xFF9500FF).copy(alpha = 0.05f) else Color.White
+                )
+                .clickable { onUploadClick() }
+                .padding(16.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                icon()
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = helperText,
+                    fontSize = 12.sp,
+                    color = if (uploadedUris.isNotEmpty()) Color(0xFF9500FF) else Color.Gray,
+                    textAlign = TextAlign.Center,
+                    fontWeight = if (uploadedUris.isNotEmpty()) FontWeight.SemiBold else FontWeight.Normal
+                )
+            }
+        }
+
+        // Display uploaded files list
+        if (uploadedUris.isNotEmpty()) {
+            Spacer(modifier = Modifier.height(12.dp))
+            
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color(0xFF9500FF).copy(alpha = 0.08f), RoundedCornerShape(8.dp))
+                    .padding(12.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    text = "✓ ${uploadedUris.size} file(s) uploaded",
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = Color(0xFF9500FF),
+                    modifier = Modifier.padding(bottom = 4.dp)
+                )
+
+                uploadedUris.forEachIndexed { index, uri ->
+                    DocumentFileItem(
+                        fileName = "Document ${index + 1}",
+                        fileUri = uri,
+                        onRemove = { onRemoveFile(index) }
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun DocumentFileItem(
+    fileName: String,
+    fileUri: String,
+    onRemove: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(Color.White, RoundedCornerShape(6.dp))
+            .border(0.5.dp, Color(0xFFE0E0E0), RoundedCornerShape(6.dp))
+            .padding(12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Row(
+            modifier = Modifier.weight(1f),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Outlined.Article,
+                contentDescription = "Document",
+                modifier = Modifier.size(20.dp),
+                tint = Color(0xFF9500FF)
+            )
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = fileName,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = Color(0xFF333333),
+                    maxLines = 1
+                )
+                Text(
+                    text = fileUri.takeLast(30),
+                    fontSize = 10.sp,
+                    color = Color.Gray,
+                    maxLines = 1
+                )
+            }
+        }
+
+        // Remove button
+        Icon(
+            imageVector = Icons.Default.Clear,
+            contentDescription = "Remove",
+            modifier = Modifier
+                .size(20.dp)
+                .clickable { onRemove() },
+            tint = Color(0xFFFF2F4B)
+        )
     }
 }
 

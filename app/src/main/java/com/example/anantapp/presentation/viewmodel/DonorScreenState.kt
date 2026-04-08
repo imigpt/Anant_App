@@ -11,6 +11,7 @@ data class DonorScreenState(
     val panNumber: String = "",
     val houseNo: String = "",
     val street: String = "",
+    val state: String = "",
     val city: String = "",
     val pincode: String = "",
     val employeeId: String = "",

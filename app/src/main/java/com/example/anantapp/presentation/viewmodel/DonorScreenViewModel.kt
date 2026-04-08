@@ -38,6 +38,10 @@ class DonorScreenViewModel : ViewModel() {
         _uiState.value = _uiState.value.copy(street = street)
     }
 
+    fun updateState(state: String) {
+        _uiState.value = _uiState.value.copy(state = state)
+    }
+
     fun updateCity(city: String) {
         _uiState.value = _uiState.value.copy(city = city)
     }

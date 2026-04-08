@@ -2,7 +2,7 @@ package com.example.anantapp.ui.verify
 
 import android.Manifest
 import android.content.pm.PackageManager
-import android.util.Log
+import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -16,30 +16,38 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.anantapp.data.model.PhotoUploadState
+import java.io.File
 
-// Color definitions
+// Exact colors mapped from the provided UI image
 private val OrangeGradientStart = Color(0xFFFF6300)
 private val OrangeGradientEnd = Color(0xFFFFCF11)
-private val PurpleAccent = Color(0xFFC026D3)
-private val MainBackground = Color(0xFFFAFAFA)
+private val MainBackground = Color(0xFFF6F6F6)
 private val TextPrimary = Color(0xFF000000)
-private val TextSecondary = Color(0xFF888888)
+private val TextSecondary = Color(0xFF666666)
+private val GradientBorderColors = listOf(Color(0xFF8A2387), Color(0xFFE94057), Color(0xFFF27121))
 
 @Composable
 fun PhotoUploadScreen(
@@ -48,24 +56,31 @@ fun PhotoUploadScreen(
     onSuccess: () -> Unit = {}
 ) {
     val context = LocalContext.current
-    val lifecycleOwner = LocalLifecycleOwner.current
     val uiState by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     
-    // Blink detection UI state
-    var showCameraPreview by remember { mutableStateOf(false) }
-    var blinkStatusMessage by remember { mutableStateOf("Blink your eyes 2 times to capture") }
-    var currentBlinkCount by remember { mutableIntStateOf(0) }
-    val requiredBlinks = 2  // Minimum blinks needed
+    // Create a temporary file URI for camera capture
+    val cameraImageUri = remember {
+        val file = File(context.cacheDir, "photo_${System.currentTimeMillis()}.jpg")
+        FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
+    }
+
+    // Camera launcher - captures photo directly
+    // Must be declared before cameraPermissionLauncher to be accessible in the lambda
+    val takePictureLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.TakePicture()
+    ) { success ->
+        if (success) {
+            viewModel.selectPhoto(cameraImageUri.toString())
+        }
+    }
 
     // Permission launcher
     val cameraPermissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { isGranted ->
         if (isGranted) {
-            showCameraPreview = true
-        } else {
-            // Handle permission denied
+            takePictureLauncher.launch(cameraImageUri)
         }
     }
 
@@ -75,7 +90,6 @@ fun PhotoUploadScreen(
     ) { uri ->
         if (uri != null) {
             viewModel.selectPhoto(uri.toString())
-            showCameraPreview = false
         }
     }
 
@@ -93,6 +107,39 @@ fun PhotoUploadScreen(
         }
     }
 
+    PhotoUploadContent(
+        uiState = uiState,
+        snackbarHostState = snackbarHostState,
+        onSkipClick = onSkipClick,
+        onTakePhotoClick = {
+            val permissionCheck = ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.CAMERA
+            )
+            if (permissionCheck == PackageManager.PERMISSION_GRANTED) {
+                takePictureLauncher.launch(cameraImageUri)
+            } else {
+                cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+            }
+        },
+        onChoosePhotoClick = {
+            galleryLauncher.launch(
+                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+            )
+        },
+        onSubmitClick = viewModel::submitPhoto
+    )
+}
+
+@Composable
+private fun PhotoUploadContent(
+    uiState: PhotoUploadState,
+    snackbarHostState: SnackbarHostState,
+    onSkipClick: () -> Unit,
+    onTakePhotoClick: () -> Unit,
+    onChoosePhotoClick: () -> Unit,
+    onSubmitClick: () -> Unit
+) {
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -104,215 +151,223 @@ fun PhotoUploadScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 24.dp, vertical = 32.dp),
+                .padding(horizontal = 20.dp, vertical = 40.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.weight(1f))
-
             PhotoUploadCard(
                 uiState = uiState,
-                showCameraPreview = showCameraPreview,
-                blinkStatusMessage = blinkStatusMessage,
-                currentBlinkCount = currentBlinkCount,
-                requiredBlinks = requiredBlinks,
                 onSkipClick = onSkipClick,
-                onTakePhotoClick = {
-                    val permissionCheck = ContextCompat.checkSelfPermission(
-                        context,
-                        Manifest.permission.CAMERA
-                    )
-                    if (permissionCheck == PackageManager.PERMISSION_GRANTED) {
-                        showCameraPreview = true
-                    } else {
-                        cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
-                    }
-                },
-                onChoosePhotoClick = {
-                    galleryLauncher.launch(
-                        PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
-                    )
-                },
-                onBlinkDetected = {
-                    // Logic triggered when user blinks - will be called after 2 blinks
-                    blinkStatusMessage = "Captured! ✓"
-                    viewModel.selectPhoto("camera://blink_capture_${System.currentTimeMillis()}")
-                    showCameraPreview = false
-                },
-                onBlinkCountChanged = { count ->
-                    currentBlinkCount = count
-                    blinkStatusMessage = "Blink $count/$requiredBlinks times"
-                },
-                onSubmitClick = viewModel::submitPhoto,
-                lifecycleOwner = lifecycleOwner,
-                context = context
+                onTakePhotoClick = onTakePhotoClick,
+                onChoosePhotoClick = onChoosePhotoClick,
+                onSubmitClick = onSubmitClick
             )
-
-            Spacer(modifier = Modifier.weight(1f))
-
-            // Footer
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 16.dp),
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.Lock,
-                    contentDescription = null,
-                    tint = Color(0xFFB0B0B0),
-                    modifier = Modifier.size(14.dp)
-                )
-                Spacer(modifier = Modifier.width(6.dp))
-                Text(
-                    text = "Your data stays private & encrypted.",
-                    fontSize = 12.sp,
-                    color = Color(0xFFB0B0B0)
-                )
-            }
         }
 
         if (uiState.isLoading) {
             LoadingOverlayPhoto()
         }
 
-        SnackbarHost(hostState = snackbarHostState)
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier.align(Alignment.BottomCenter)
+        )
     }
 }
 
 @Composable
 private fun PhotoUploadCard(
-    uiState: com.example.anantapp.data.model.PhotoUploadState,
-    showCameraPreview: Boolean,
-    blinkStatusMessage: String,
-    currentBlinkCount: Int,
-    requiredBlinks: Int,
+    uiState: PhotoUploadState,
     onSkipClick: () -> Unit,
     onTakePhotoClick: () -> Unit,
     onChoosePhotoClick: () -> Unit,
-    onBlinkDetected: () -> Unit,
-    onBlinkCountChanged: (Int) -> Unit,
-    onSubmitClick: () -> Unit,
-    lifecycleOwner: androidx.lifecycle.LifecycleOwner,
-    context: android.content.Context
+    onSubmitClick: () -> Unit
 ) {
-    Card(
+    // Glassmorphism Card
+    Box(
         modifier = Modifier
             .fillMaxWidth()
-            .shadow(24.dp, RoundedCornerShape(32.dp))
-            .background(Color.White, RoundedCornerShape(32.dp)),
-        colors = CardDefaults.cardColors(containerColor = Color.White)
+            .shadow(24.dp, RoundedCornerShape(32.dp), spotColor = Color.LightGray.copy(alpha = 0.5f))
+            .clip(RoundedCornerShape(32.dp))
+            .background(Color.White.copy(alpha = 0.85f))
+            .border(
+                width = 1.dp,
+                color = Color.White.copy(alpha = 0.5f),
+                shape = RoundedCornerShape(32.dp)
+            )
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(24.dp),
+                .padding(horizontal = 24.dp, vertical = 32.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Header Row
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Icon(Icons.Filled.CameraAlt, contentDescription = null, modifier = Modifier.size(32.dp))
-                TextButton(onClick = onSkipClick) {
+
+            // Header Row: Centered Camera Icon & Top-Right Skip Button
+            Box(modifier = Modifier.fillMaxWidth()) {
+                Icon(
+                    imageVector = Icons.Outlined.CameraAlt,
+                    contentDescription = "Camera",
+                    modifier = Modifier
+                        .size(64.dp)
+                        .align(Alignment.Center),
+                    tint = TextPrimary
+                )
+
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .border(1.dp, Color(0xFFE0E0E0), RoundedCornerShape(16.dp))
+                        .clip(RoundedCornerShape(16.dp))
+                        .clickable { onSkipClick() }
+                        .padding(horizontal = 14.dp, vertical = 6.dp)
+                ) {
                     Text("Skip >>", color = TextSecondary, fontSize = 12.sp)
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Title & Subtitle
-            Text(text = uiState.title, fontSize = 22.sp, fontWeight = FontWeight.Bold)
-            Text(
-                text = "This keeps your profile verified as per banking KYC norms.",
-                fontSize = 13.sp,
-                color = TextSecondary,
-                textAlign = androidx.compose.ui.text.style.TextAlign.Center
-            )
-
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Central Area: Camera Preview or Placeholder
+            // Title & Subtitle
+            Text(
+                text = "Upload Your Photo",
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold,
+                color = TextPrimary
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "This keeps your profile verified as\nper banking KYC norms.",
+                fontSize = 14.sp,
+                color = TextSecondary,
+                textAlign = TextAlign.Center,
+                lineHeight = 20.sp
+            )
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            // Central Area: Dashed Background Box
+            val dashEffect = PathEffect.dashPathEffect(floatArrayOf(15f, 15f), 0f)
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(240.dp)
-                    .clip(RoundedCornerShape(24.dp))
-                    .background(Color(0xFFF5F5F5)),
+                    .drawBehind {
+                        drawRoundRect(
+                            color = Color(0xFFD0D0D0),
+                            style = Stroke(width = 3f, pathEffect = dashEffect),
+                            cornerRadius = CornerRadius(24.dp.toPx())
+                        )
+                    }
+                    .background(Color.White.copy(alpha = 0.6f), RoundedCornerShape(24.dp)),
                 contentAlignment = Alignment.Center
             ) {
-                if (showCameraPreview) {
-                    // LIVE CAMERA PREVIEW WITH BLINK DETECTION
-                    BlinkDetectionCameraPreview(
-                        onBlinkDetected = onBlinkDetected,
-                        onBlinkCountChanged = onBlinkCountChanged,
-                        lifecycleOwner = lifecycleOwner,
-                        context = context,
-                        requiredBlinks = requiredBlinks
-                    )
-                } else if (uiState.isPhotoSelected) {
-                    // Success View
+                if (uiState.isPhotoSelected) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Icon(Icons.Filled.CheckCircle, contentDescription = null, tint = Color(0xFF6B9B25), modifier = Modifier.size(64.dp))
+                        Spacer(modifier = Modifier.height(8.dp))
                         Text("Photo Selected ✓", color = Color(0xFF6B9B25), fontWeight = FontWeight.Bold)
                     }
                 } else {
-                    // Default View
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("😊", fontSize = 48.sp)
-                        Text("Add a clear photo of yourself", color = TextSecondary, fontSize = 14.sp)
+                        Icon(
+                            imageVector = Icons.Outlined.Face,
+                            contentDescription = "Face placeholder",
+                            tint = TextPrimary,
+                            modifier = Modifier.size(80.dp)
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text("Add a clear photo of yourself.", color = TextSecondary, fontSize = 14.sp)
                     }
                 }
             }
 
-            if (showCameraPreview) {
-                Text(
-                    text = "📹 $blinkStatusMessage",
-                    modifier = Modifier.padding(top = 12.dp),
-                    color = Color(0xFFFF6300),
-                    fontWeight = FontWeight.Bold
-                )
+            Spacer(modifier = Modifier.height(32.dp))
+
+            // Action Buttons Row
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                // Take Photo
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .shadow(8.dp, RoundedCornerShape(24.dp), spotColor = OrangeGradientStart.copy(alpha = 0.5f))
+                        .background(Brush.horizontalGradient(listOf(OrangeGradientStart, OrangeGradientEnd)), RoundedCornerShape(24.dp))
+                        .clip(RoundedCornerShape(24.dp))
+                        .clickable { onTakePhotoClick() }
+                        .padding(vertical = 14.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Outlined.CameraAlt, contentDescription = null, tint = TextPrimary, modifier = Modifier.size(20.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Take Photo", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
+                    }
+                }
+
+                // Choose from Gallery
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .shadow(8.dp, RoundedCornerShape(24.dp), spotColor = OrangeGradientStart.copy(alpha = 0.5f))
+                        .background(Brush.horizontalGradient(listOf(OrangeGradientStart, OrangeGradientEnd)), RoundedCornerShape(24.dp))
+                        .clip(RoundedCornerShape(24.dp))
+                        .clickable { onChoosePhotoClick() }
+                        .padding(vertical = 12.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Outlined.AddPhotoAlternate, contentDescription = null, tint = TextPrimary, modifier = Modifier.size(22.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Column(horizontalAlignment = Alignment.Start) {
+                            Text("Choose", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = TextPrimary, lineHeight = 14.sp)
+                            Text("from Gallery", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = TextPrimary, lineHeight = 14.sp)
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            // Submit Button
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(54.dp)
+                    .border(
+                        width = 2.dp,
+                        brush = Brush.horizontalGradient(GradientBorderColors),
+                        shape = RoundedCornerShape(27.dp)
+                    )
+                    .background(Color.White.copy(alpha = 0.7f), RoundedCornerShape(27.dp))
+                    .clip(RoundedCornerShape(27.dp))
+                    .clickable(enabled = uiState.isSubmitEnabled) { onSubmitClick() },
+                contentAlignment = Alignment.Center
+            ) {
+                Text("Submit", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = TextPrimary)
             }
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Action Buttons
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                Button(
-                    onClick = onTakePhotoClick,
-                    modifier = Modifier.weight(1f).height(48.dp),
-                    shape = RoundedCornerShape(24.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = OrangeGradientStart)
-                ) {
-                    Icon(Icons.Filled.PhotoCamera, contentDescription = null, modifier = Modifier.size(18.dp))
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Take Photo", fontSize = 13.sp)
-                }
-
-                Button(
-                    onClick = onChoosePhotoClick,
-                    modifier = Modifier.weight(1f).height(48.dp),
-                    shape = RoundedCornerShape(24.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = OrangeGradientStart)
-                ) {
-                    Icon(Icons.Filled.Collections, contentDescription = null, modifier = Modifier.size(18.dp))
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Gallery", fontSize = 13.sp)
-                }
-            }
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            // Submit Button
-            Button(
-                onClick = onSubmitClick,
-                enabled = uiState.isSubmitEnabled,
-                modifier = Modifier.fillMaxWidth().height(54.dp),
-                shape = RoundedCornerShape(27.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = PurpleAccent,
-                    disabledContainerColor = Color(0xFFE0E0E0)
-                )
+            // Footer
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("Submit Verification", fontWeight = FontWeight.Bold, color = Color.White)
+                Icon(
+                    imageVector = Icons.Filled.Lock,
+                    contentDescription = null,
+                    tint = Color(0xFFC0C0C0),
+                    modifier = Modifier.size(16.dp)
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                Text(
+                    text = "Your data stays private & encrypted.",
+                    fontSize = 13.sp,
+                    color = Color(0xFFC0C0C0)
+                )
             }
         }
     }
@@ -320,18 +375,59 @@ private fun PhotoUploadCard(
 
 @Composable
 private fun LoadingOverlayPhoto() {
-    Box(modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.4f)), contentAlignment = Alignment.Center) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black.copy(alpha = 0.5f)),
+        contentAlignment = Alignment.Center
+    ) {
         CircularProgressIndicator(color = Color.White)
     }
 }
 
 @Composable
 private fun BoxScope.BackgroundDecorationPhoto() {
+    // Top Left Background Element
     Box(
         modifier = Modifier
-            .size(300.dp)
-            .align(Alignment.TopEnd)
-            .offset(x = 100.dp, y = (-50).dp)
+            .size(250.dp)
+            .align(Alignment.TopStart)
+            .offset(x = (-60).dp, y = (-60).dp)
             .background(Brush.linearGradient(listOf(OrangeGradientStart, OrangeGradientEnd)), CircleShape)
+    )
+
+    // Bottom Right Background Element
+    Box(
+        modifier = Modifier
+            .size(250.dp)
+            .align(Alignment.BottomEnd)
+            .offset(x = 60.dp, y = 60.dp)
+            .background(Brush.linearGradient(listOf(OrangeGradientStart, OrangeGradientEnd)), CircleShape)
+    )
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun PhotoUploadContentPreview() {
+    PhotoUploadContent(
+        uiState = PhotoUploadState(),
+        snackbarHostState = remember { SnackbarHostState() },
+        onSkipClick = {},
+        onTakePhotoClick = {},
+        onChoosePhotoClick = {},
+        onSubmitClick = {}
+    )
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun PhotoUploadContentSelectedPreview() {
+    PhotoUploadContent(
+        uiState = PhotoUploadState(isPhotoSelected = true),
+        snackbarHostState = remember { SnackbarHostState() },
+        onSkipClick = {},
+        onTakePhotoClick = {},
+        onChoosePhotoClick = {},
+        onSubmitClick = {}
     )
 }

@@ -1,12 +1,21 @@
 package com.example.anantapp.presentation.screen
 
+import android.Manifest
+import android.content.Context
+import android.content.pm.PackageManager
+import android.location.Address
+import android.location.Geocoder
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material.icons.outlined.Lock
@@ -26,18 +35,34 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.anantapp.R
 import com.example.anantapp.presentation.viewmodel.EnableLocationViewModel
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.Priority
+import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.model.CameraPosition
+import com.google.android.gms.maps.model.LatLng
+import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.MapProperties
+import com.google.maps.android.compose.Marker
+import com.google.maps.android.compose.MarkerState
+import com.google.maps.android.compose.rememberCameraPositionState
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withContext
+import java.util.Locale
+import android.location.Location
+import kotlin.coroutines.resume
 
 @Composable
 fun EnableLocationScreen(
@@ -46,12 +71,110 @@ fun EnableLocationScreen(
     viewModel: EnableLocationViewModel = viewModel()
 ) {
     val state by viewModel.state.collectAsState()
+    val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    val defaultLocation = remember { LatLng(28.6139, 77.2090) }
+    var selectedLocation by remember { mutableStateOf(defaultLocation) }
+    var selectedAddressTitle by remember { mutableStateOf("Current Area") }
+    var suggestions by remember { mutableStateOf<List<AddressSuggestion>>(emptyList()) }
+    var showSuggestions by remember { mutableStateOf(false) }
+    var hasLocationPermission by remember { mutableStateOf(false) }
+    val cameraPositionState = rememberCameraPositionState {
+        position = CameraPosition.fromLatLngZoom(defaultLocation, 13f)
+    }
+    val fusedLocationClient = remember(context) {
+        LocationServices.getFusedLocationProviderClient(context)
+    }
+
+    val locationPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { result ->
+        val granted = result[Manifest.permission.ACCESS_FINE_LOCATION] == true ||
+            result[Manifest.permission.ACCESS_COARSE_LOCATION] == true
+        hasLocationPermission = granted
+        if (granted) {
+            scope.launch {
+                val location = getLastKnownOrCurrentLocation(context, fusedLocationClient)
+                if (location != null) {
+                    val current = LatLng(location.latitude, location.longitude)
+                    selectedLocation = current
+                    selectedAddressTitle = "Current Location"
+                    viewModel.setLocationData(location.latitude, location.longitude, state.address)
+                    cameraPositionState.animate(
+                        CameraUpdateFactory.newLatLngZoom(current, 15f),
+                        durationMs = 1000
+                    )
+                }
+            }
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        val fineGranted = ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+        val coarseGranted = ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.ACCESS_COARSE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+        hasLocationPermission = fineGranted || coarseGranted
+
+        if (fineGranted || coarseGranted) {
+            scope.launch {
+                val location = getLastKnownOrCurrentLocation(context, fusedLocationClient)
+                if (location != null) {
+                    val current = LatLng(location.latitude, location.longitude)
+                    selectedLocation = current
+                    selectedAddressTitle = "Current Location"
+                    viewModel.setLocationData(location.latitude, location.longitude, state.address)
+                    cameraPositionState.animate(
+                        CameraUpdateFactory.newLatLngZoom(current, 15f),
+                        durationMs = 1000
+                    )
+                }
+            }
+        } else {
+            locationPermissionLauncher.launch(
+                arrayOf(
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                )
+            )
+        }
+    }
 
     LaunchedEffect(state.successMessage) {
         if (state.successMessage != null) {
             scope.launch { onSuccess() }
             viewModel.clearMessages()
+        }
+    }
+
+    LaunchedEffect(state.address) {
+        val query = state.address.trim()
+        if (query.length < 3) {
+            suggestions = emptyList()
+            showSuggestions = false
+            return@LaunchedEffect
+        }
+
+        delay(300)
+        val result = fetchAddressSuggestions(context, query)
+        suggestions = result
+        showSuggestions = true
+
+        if (result.isNotEmpty()) {
+            val bestMatch = result.first()
+            selectedLocation = bestMatch.location
+            selectedAddressTitle = bestMatch.title
+            // Animate camera to new location
+            scope.launch {
+                cameraPositionState.animate(
+                    CameraUpdateFactory.newLatLngZoom(bestMatch.location, 15f),
+                    durationMs = 1000
+                )
+            }
         }
     }
 
@@ -109,7 +232,8 @@ fun EnableLocationScreen(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(24.dp),
+                    .padding(horizontal = 24.dp, vertical = 16.dp)
+                    .verticalScroll(rememberScrollState()),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 // Top Row: Skip Button
@@ -138,7 +262,7 @@ fun EnableLocationScreen(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
                 // Location Icon
                 Icon(
@@ -171,24 +295,30 @@ fun EnableLocationScreen(
                     lineHeight = 18.sp
                 )
 
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
-                // Map Image Box
+                // Google Map Box
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .weight(1f)
+                        .height(450.dp)
                         .clip(RoundedCornerShape(24.dp))
                 ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.map_img),
-                        contentDescription = "Map Preview",
+                    GoogleMap(
                         modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop
-                    )
+                        cameraPositionState = cameraPositionState,
+                        properties = MapProperties(
+                            isMyLocationEnabled = hasLocationPermission
+                        )
+                    ) {
+                        Marker(
+                            state = MarkerState(position = selectedLocation),
+                            title = selectedAddressTitle
+                        )
+                    }
                 }
 
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
                 // Address Input Field with Gradient Outline
                 Box(
@@ -210,7 +340,10 @@ fun EnableLocationScreen(
                 ) {
                     OutlinedTextField(
                         value = state.address,
-                        onValueChange = { viewModel.updateAddress(it) },
+                        onValueChange = {
+                            viewModel.updateAddress(it)
+                            showSuggestions = true
+                        },
                         modifier = Modifier.fillMaxSize(),
                         placeholder = {
                             Text(
@@ -233,6 +366,68 @@ fun EnableLocationScreen(
                         shape = RoundedCornerShape(28.dp),
                         singleLine = true
                     )
+                }
+
+                if (showSuggestions) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(max = 180.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color.White)
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .verticalScroll(rememberScrollState())
+                        ) {
+                            if (suggestions.isEmpty()) {
+                                Text(
+                                    text = "No address found for this input",
+                                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
+                                    fontSize = 13.sp,
+                                    color = Color(0xFF777777)
+                                )
+                            } else {
+                                suggestions.forEach { suggestion ->
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .clickable {
+                                                viewModel.updateAddress(suggestion.title)
+                                                selectedLocation = suggestion.location
+                                                selectedAddressTitle = suggestion.title
+                                                scope.launch {
+                                                    cameraPositionState.animate(
+                                                        CameraUpdateFactory.newLatLngZoom(suggestion.location, 15f),
+                                                        durationMs = 1000
+                                                    )
+                                                }
+                                                showSuggestions = false
+                                                suggestions = emptyList()
+                                            }
+                                            .padding(horizontal = 14.dp, vertical = 12.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Outlined.LocationOn,
+                                            contentDescription = "Suggestion",
+                                            tint = Color(0xFF666666),
+                                            modifier = Modifier.size(18.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(10.dp))
+                                        Text(
+                                            text = suggestion.title,
+                                            fontSize = 13.sp,
+                                            color = Color(0xFF333333),
+                                            maxLines = 2
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -286,8 +481,83 @@ fun EnableLocationScreen(
     }
 }
 
+private suspend fun getLastKnownOrCurrentLocation(
+    context: Context,
+    fusedLocationClient: com.google.android.gms.location.FusedLocationProviderClient
+): Location? {
+    val fineGranted = ContextCompat.checkSelfPermission(
+        context,
+        Manifest.permission.ACCESS_FINE_LOCATION
+    ) == PackageManager.PERMISSION_GRANTED
+    val coarseGranted = ContextCompat.checkSelfPermission(
+        context,
+        Manifest.permission.ACCESS_COARSE_LOCATION
+    ) == PackageManager.PERMISSION_GRANTED
+
+    if (!fineGranted && !coarseGranted) return null
+
+    val lastLocation = suspendCancellableCoroutine<Location?> { continuation ->
+        fusedLocationClient.lastLocation
+            .addOnSuccessListener { continuation.resume(it) }
+            .addOnFailureListener { continuation.resume(null) }
+    }
+    if (lastLocation != null) return lastLocation
+
+    val priority = if (fineGranted) {
+        Priority.PRIORITY_HIGH_ACCURACY
+    } else {
+        Priority.PRIORITY_BALANCED_POWER_ACCURACY
+    }
+
+    return suspendCancellableCoroutine { continuation ->
+        fusedLocationClient.getCurrentLocation(priority, null)
+            .addOnSuccessListener { continuation.resume(it) }
+            .addOnFailureListener { continuation.resume(null) }
+    }
+}
+
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun EnableLocationScreenPreview() {
     EnableLocationScreen(onSkip = {}, onSuccess = {})
+}
+
+private data class AddressSuggestion(
+    val title: String,
+    val location: LatLng
+)
+
+private suspend fun fetchAddressSuggestions(context: Context, query: String): List<AddressSuggestion> {
+    val geocoder = Geocoder(context, Locale.getDefault())
+
+    return try {
+        val addresses: List<Address> = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            suspendCancellableCoroutine { continuation ->
+                geocoder.getFromLocationName(query, 5) { result ->
+                    continuation.resume(result ?: emptyList())
+                }
+            }
+        } else {
+            withContext(Dispatchers.IO) {
+                runCatching { geocoder.getFromLocationName(query, 5).orEmpty() }
+                    .getOrDefault(emptyList())
+            }
+        }
+
+        addresses.mapNotNull { address ->
+            val lat = address.latitude
+            val lng = address.longitude
+            val title = address.getAddressLine(0)
+                ?: listOfNotNull(address.featureName, address.locality, address.adminArea)
+                    .joinToString(", ")
+
+            if (title.isBlank()) {
+                null
+            } else {
+                AddressSuggestion(title = title, location = LatLng(lat, lng))
+            }
+        }
+    } catch (e: Exception) {
+        emptyList()
+    }
 }
