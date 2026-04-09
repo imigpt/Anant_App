@@ -947,7 +947,7 @@ fun BottomActionButtons(
 
 @Composable
 fun UploadPhotoButton(gradient: Brush, onClick: () -> Unit) {
-    val stroke = Stroke(width = 4f, pathEffect = PathEffect.dashPathEffect(floatArrayOf(15f, 15f), 0f))
+    val stroke = Stroke(width = 0.3f, pathEffect = PathEffect.dashPathEffect(floatArrayOf(15f, 15f), 0f))
     Box(
         modifier = Modifier
             .size(90.dp)

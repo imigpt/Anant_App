@@ -109,7 +109,7 @@ fun LocationSharedSuccessScreen(
                                 drawCircle(
                                     color = Color.Black,
                                     radius = size.minDimension / 2,
-                                    style = Stroke(width = 3.dp.toPx(), cap = StrokeCap.Round)
+                                    style = Stroke(width = 0.3.dp.toPx(), cap = StrokeCap.Butt)
                                 )
 
                                 // Draw checkmark
@@ -123,8 +123,8 @@ fun LocationSharedSuccessScreen(
                                     color = Color.Black,
                                     start = Offset(centerX - checkWidth / 3, centerY + checkHeight / 4),
                                     end = Offset(centerX - checkWidth / 6, centerY + checkHeight / 2),
-                                    strokeWidth = 3.dp.toPx(),
-                                    cap = StrokeCap.Round
+                                    strokeWidth = 0.3.dp.toPx(),
+                                    cap = StrokeCap.Butt
                                 )
 
                                 // Right part of checkmark
@@ -132,8 +132,8 @@ fun LocationSharedSuccessScreen(
                                     color = Color.Black,
                                     start = Offset(centerX - checkWidth / 6, centerY + checkHeight / 2),
                                     end = Offset(centerX + checkWidth / 2.5f, centerY - checkHeight / 3),
-                                    strokeWidth = 3.dp.toPx(),
-                                    cap = StrokeCap.Round
+                                    strokeWidth = 0.3.dp.toPx(),
+                                    cap = StrokeCap.Butt
                                 )
                             }
                         )

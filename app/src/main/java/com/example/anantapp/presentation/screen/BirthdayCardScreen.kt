@@ -180,7 +180,7 @@ fun BirthdayCardScreen(
                     style = TextStyle(
                         fontSize = 38.sp,
                         fontWeight = FontWeight.Black,
-                        drawStyle = Stroke(width = 2f)
+                        drawStyle = Stroke(width = 0.3f)
                     )
                 )
 
@@ -233,8 +233,8 @@ fun BirthdayCardScreen(
                     drawCircle(color = Color.White, radius = 2.dp.toPx(), center = Offset(2.dp.toPx(), size.height / 2))
                     drawCircle(color = Color.White, radius = 2.dp.toPx(), center = Offset(size.width - 2.dp.toPx(), 2.dp.toPx()))
                     drawCircle(color = Color.White, radius = 2.dp.toPx(), center = Offset(size.width - 2.dp.toPx(), size.height - 2.dp.toPx()))
-                    drawLine(color = Color.White, start = Offset(4.dp.toPx(), size.height / 2), end = Offset(size.width - 4.dp.toPx(), 4.dp.toPx()), strokeWidth = 1.dp.toPx())
-                    drawLine(color = Color.White, start = Offset(4.dp.toPx(), size.height / 2), end = Offset(size.width - 4.dp.toPx(), size.height - 4.dp.toPx()), strokeWidth = 1.dp.toPx())
+                    drawLine(color = Color.White, start = Offset(4.dp.toPx(), size.height / 2), end = Offset(size.width - 4.dp.toPx(), 4.dp.toPx()), strokeWidth = 0.3.dp.toPx())
+                    drawLine(color = Color.White, start = Offset(4.dp.toPx(), size.height / 2), end = Offset(size.width - 4.dp.toPx(), size.height - 4.dp.toPx()), strokeWidth = 0.3.dp.toPx())
                 }
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(

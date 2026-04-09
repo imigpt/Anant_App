@@ -231,7 +231,7 @@ fun SuggestedAmountButton(amount: String, modifier: Modifier = Modifier, onClick
         modifier = modifier
             .height(40.dp)
             .border(
-                BorderStroke(1.dp, Color(0xFFE0E0E0)),
+                BorderStroke(0.3.dp, Color(0xFFE0E0E0)),
                 shape = RoundedCornerShape(12.dp)
             ),
         shape = RoundedCornerShape(12.dp),

@@ -373,11 +373,11 @@ private fun CameraPreviewWithQRScanner(
 @Composable
 private fun QRViewfinder(modifier: Modifier = Modifier) {
     Canvas(modifier = modifier) {
-        val strokeWidth = 2.dp.toPx()
+        val strokeWidth = 0.3.dp.toPx()
         val cornerLength = 48.dp.toPx()
         val cornerRadius = 16.dp.toPx()
         val color = Color.Black
-        val style = Stroke(width = strokeWidth, cap = StrokeCap.Round)
+        val style = Stroke(width = strokeWidth, cap = StrokeCap.Butt)
 
         // Top-Left Bracket
         drawPath(

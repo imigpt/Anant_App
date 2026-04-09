@@ -122,16 +122,16 @@ fun LocationSharedSuccessScreen(
                             color = Color.White,
                             start = Offset(startX, startY),
                             end = Offset(midX, midY),
-                            strokeWidth = 5.dp.toPx(),
-                            cap = StrokeCap.Round
+                            strokeWidth = 0.3.dp.toPx(),
+                            cap = StrokeCap.Butt
                         )
                         
                         drawLine(
                             color = Color.White,
                             start = Offset(midX, midY),
                             end = Offset(endX, endY),
-                            strokeWidth = 5.dp.toPx(),
-                            cap = StrokeCap.Round
+                            strokeWidth = 0.3.dp.toPx(),
+                            cap = StrokeCap.Butt
                         )
                     }
                     

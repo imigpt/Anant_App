@@ -93,7 +93,7 @@ fun SOSHistoryScreen(
 
             // Custom Logo (Life Preserver / Crosshair)
             Canvas(modifier = Modifier.size(72.dp)) {
-                val strokeWidth = 24f
+                val strokeWidth = 0.3f
                 val radius = (size.minDimension - strokeWidth) / 2
                 val center = Offset(size.width / 2, size.height / 2)
 
@@ -106,7 +106,7 @@ fun SOSHistoryScreen(
                         useCenter = false,
                         topLeft = Offset(center.x - radius, center.y - radius),
                         size = Size(radius * 2, radius * 2),
-                        style = Stroke(width = strokeWidth, cap = StrokeCap.Round)
+                        style = Stroke(width = strokeWidth, cap = StrokeCap.Butt)
                     )
                 }
             }

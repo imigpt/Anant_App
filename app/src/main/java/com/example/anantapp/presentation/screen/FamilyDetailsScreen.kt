@@ -555,7 +555,7 @@ fun CustomSwitch(
 @Composable
 fun FamilyLineArtIcon() {
     Canvas(modifier = Modifier.size(80.dp)) {
-        val strokeWidth = 5f
+        val strokeWidth = 0.3f
         val color = Color.Black
 
         // Back Person (Right/Top)
@@ -572,7 +572,7 @@ fun FamilyLineArtIcon() {
             useCenter = false,
             topLeft = Offset(size.width * 0.45f, size.height * 0.45f),
             size = Size(size.width * 0.4f, size.height * 0.4f),
-            style = Stroke(width = strokeWidth, cap = StrokeCap.Round)
+            style = Stroke(width = strokeWidth, cap = StrokeCap.Butt)
         )
 
         // Front Person (Left/Bottom)
@@ -602,7 +602,7 @@ fun FamilyLineArtIcon() {
             useCenter = false,
             topLeft = Offset(size.width * 0.1f, size.height * 0.7f),
             size = Size(size.width * 0.5f, size.height * 0.5f),
-            style = Stroke(width = strokeWidth, cap = StrokeCap.Round)
+            style = Stroke(width = strokeWidth, cap = StrokeCap.Butt)
         )
     }
 }

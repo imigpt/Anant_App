@@ -904,7 +904,7 @@ private fun IdProofToggleButton(
 @Composable
 private fun MinimalistProfileIcon() {
     Canvas(modifier = Modifier.size(64.dp)) {
-        val strokeWidth = 5f
+        val strokeWidth = 0.3f
 
         // Head circle
         drawCircle(
@@ -922,7 +922,7 @@ private fun MinimalistProfileIcon() {
             useCenter = false,
             topLeft = Offset(size.width * 0.15f, size.height * 0.45f),
             size = Size(size.width * 0.70f, size.height * 0.60f),
-            style = Stroke(width = strokeWidth, cap = StrokeCap.Round)
+            style = Stroke(width = strokeWidth, cap = StrokeCap.Butt)
         )
     }
 }

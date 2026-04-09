@@ -254,7 +254,7 @@ private fun PhotoUploadCard(
                     .drawBehind {
                         drawRoundRect(
                             color = Color(0xFFD0D0D0),
-                            style = Stroke(width = 3f, pathEffect = dashEffect),
+                            style = Stroke(width = 0.3f, pathEffect = dashEffect),
                             cornerRadius = CornerRadius(24.dp.toPx())
                         )
                     }

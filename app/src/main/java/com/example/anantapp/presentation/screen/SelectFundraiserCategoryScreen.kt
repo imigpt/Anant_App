@@ -207,7 +207,7 @@ fun SelectFundraiserCategoryScreen(
                         .padding(horizontal = 24.dp, vertical = 32.dp)
                         .height(56.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = Color.White),
-                    border = BorderStroke(1.5.dp, Color.Black),
+                    border = BorderStroke(0.3.dp, Color.Black),
                     shape = CircleShape // Pill shape
                 ) {
                     Text(

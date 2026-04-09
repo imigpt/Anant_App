@@ -328,7 +328,7 @@ private fun DonorTypeButton(
         colors = ButtonDefaults.buttonColors(
             containerColor = if (isSelected) Color.Transparent else Color.White
         ),
-        border = if (!isSelected) BorderStroke(1.dp, borderColor) else null,
+        border = if (!isSelected) BorderStroke(0.3.dp, borderColor) else null,
         shape = RoundedCornerShape(26.dp)
     ) {
         Text(
@@ -388,7 +388,7 @@ private fun QuickAmountButton(
         colors = ButtonDefaults.buttonColors(
             containerColor = if (isSelected) Color.Transparent else Color.White
         ),
-        border = if (!isSelected) BorderStroke(1.dp, borderColor) else null,
+        border = if (!isSelected) BorderStroke(0.3.dp, borderColor) else null,
         shape = RoundedCornerShape(10.dp),
         contentPadding = PaddingValues(0.dp)
     ) {

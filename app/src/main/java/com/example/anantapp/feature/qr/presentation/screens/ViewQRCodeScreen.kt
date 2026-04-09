@@ -134,7 +134,7 @@ fun ViewQRCodeScreen(
                             containerColor = Color.White,
                             contentColor = Color(0xFF9500FF)
                         ),
-                        border = BorderStroke(1.5.dp, Color(0xFF9500FF))
+                        border = BorderStroke(0.3.dp, Color(0xFF9500FF))
                     ) {
                         Text("Share", fontSize = 14.sp, fontWeight = FontWeight.Bold)
                     }

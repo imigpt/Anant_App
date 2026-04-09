@@ -101,7 +101,7 @@ fun OrderSuccessScreen(
                     Canvas(modifier = Modifier.size(90.dp)) {
                         drawCircle(
                             color = Color(0xFF16E030),
-                            style = Stroke(width = 3.dp.toPx())
+                            style = Stroke(width = 0.3.dp.toPx())
                         )
                         val path = Path().apply {
                             moveTo(size.width * 0.3f, size.height * 0.52f)
@@ -112,7 +112,7 @@ fun OrderSuccessScreen(
                             path = path,
                             color = Color(0xFF16E030),
                             style = Stroke(
-                                width = 3.dp.toPx(),
+                                width = 0.3.dp.toPx(),
                                 cap = StrokeCap.Round,
                                 join = StrokeJoin.Round
                             )

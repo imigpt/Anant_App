@@ -233,7 +233,7 @@ fun GenerateQRCodeInfoContent(
                                     .shadow(elevation = 6.dp, shape = RoundedCornerShape(50.dp), spotColor = Color.Black.copy(0.15f))
                                     .background(brush = buttonGradient, shape = RoundedCornerShape(50.dp)),
                                 shape = RoundedCornerShape(50.dp),
-                                border = BorderStroke(1.dp, Color.Black),
+                                border = BorderStroke(0.3.dp, Color.Black),
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = Color.Transparent
                                 ),

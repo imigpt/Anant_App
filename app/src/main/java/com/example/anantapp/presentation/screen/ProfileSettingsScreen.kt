@@ -170,7 +170,7 @@ fun ProfileSettingsScreen(
                                 fontWeight = FontWeight.Black,
                                 style = TextStyle(
                                     brush = textGradient,
-                                    drawStyle = Stroke(width = 3f)
+                                    drawStyle = Stroke(width = 0.3f)
                                 )
                             )
                             Text(

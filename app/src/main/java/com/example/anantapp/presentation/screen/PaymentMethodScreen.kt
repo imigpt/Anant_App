@@ -458,7 +458,7 @@ fun PaymentMethodScreen(
                             .fillMaxWidth()
                             .height(56.dp),
                         shape = RoundedCornerShape(18.dp),
-                        border = BorderStroke(1.dp, gradientBrush)
+                        border = BorderStroke(0.3.dp, gradientBrush)
                     ) {
                         Text(
                             text = "Submit Deposit Proof",
@@ -797,7 +797,7 @@ private fun CustomGradientRadioButton(
         if (selected) {
             drawCircle(
                 brush = brush,
-                style = Stroke(width = 3.dp.toPx())
+                style = Stroke(width = 0.3.dp.toPx())
             )
             drawCircle(
                 brush = brush,
@@ -806,7 +806,7 @@ private fun CustomGradientRadioButton(
         } else {
             drawCircle(
                 color = Color(0xFFE0E0E0),
-                style = Stroke(width = 1.5.dp.toPx())
+                style = Stroke(width = 0.3.dp.toPx())
             )
         }
     }

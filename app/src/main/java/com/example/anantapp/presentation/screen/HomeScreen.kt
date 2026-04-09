@@ -208,13 +208,13 @@ fun HomeScreen(
                                 color = Color.White,
                                 radius = 90.dp.toPx(),
                                 center = topCenter,
-                                style = Stroke(width = 16.dp.toPx())
+                                style = Stroke(width = 0.3.dp.toPx())
                             )
                             drawCircle(
                                 color = Color(0xFF4A00E0), // Deep blue/purple
                                 radius = 74.dp.toPx(),
                                 center = topCenter,
-                                style = Stroke(width = 24.dp.toPx())
+                                style = Stroke(width = 0.3.dp.toPx())
                             )
                             drawCircle(
                                 color = Color(0xFFFF007A), // Pink
